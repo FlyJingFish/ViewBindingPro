@@ -1,0 +1,80 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
+    id 'kotlinx-serialization'
+}
+
+apply from: "$rootDir/gradle/android_base.gradle"
+android {
+    namespace 'com.flyjingfish.viewbindingpro'
+    compileSdk 33
+    defaultConfig {
+        applicationId "com.flyjingfish.viewbindingpro"
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures {
+        viewBinding true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(rootProject.file("keystore"))
+            storePassword '123456'
+            keyAlias 'android_aop'
+            keyPassword '123456'
+        }
+    }
+
+    buildTypes {
+        debug {
+            ext.enableCrashlytics = false
+            signingConfig signingConfigs.release
+            shrinkResources false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        release {
+            signingConfig signingConfigs.release
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+        }
+    }
+
+
+    packagingOptions {
+        exclude 'META-INF/kotlinx_coroutines_core.version'
+    }
+
+}
+
+dependencies {
+//    implementation(fileTree("libs"))
+    implementation libs.core.ktx
+    implementation libs.appcompat
+    implementation libs.material
+    implementation project(':viewbindingpro-core')
+    debugImplementation libs.leakcanary
+    implementation libs.bcprov.jdk15on
+    implementation "com.squareup.retrofit2:retrofit:2.8.1"
+
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.androidx.rules
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
+    implementation libs.gson
+}
