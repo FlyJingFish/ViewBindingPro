@@ -43,7 +43,7 @@
 ### 一、引入插件（必须）
 
 
-- 新版本
+- 新版本（审核中，暂不可用）
 
   ```gradle
   
@@ -52,8 +52,8 @@
       id "io.github.FlyJingFish.ViewBindingPro" version "1.0.0" apply true
   }
   ```
-  <details>
-  <summary><strong>或者老版本</strong></summary>
+  
+- 或者老版本
 
   ```gradle
     buildscript {
@@ -65,7 +65,6 @@
     // 👇加上这句自动为所有module“预”配置debugMode，不加则按下边步骤五的方式二
     apply plugin: "viewbinding.pro"
     ```
-  </details>
 
 
 ### 二、引入依赖库(必须)
