@@ -35,19 +35,10 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用这个框架之后，您在 BaseActivity 或 BaseFragment 等基类配置一个注解就可以为 子类自动注入加载代码，无需使用反射
 
 
-## Star趋势图
-
-[![Stargazers over time](https://starchart.cc/FlyJingFish/ViewBindingPro.svg?variant=adaptive)](https://starchart.cc/FlyJingFish/ViewBindingPro)
-
----
 
 ## 使用步骤
 
 **在开始之前可以给项目一个Star吗？非常感谢，你的支持是我唯一的动力。欢迎Star和Issues!**
-
-![Stargazers over time](https://github.com/FlyJingFish/ViewBindingPro/blob/master/docs/screenshot/warning_maven_central.svg)
-
-完整版文档请点击 [ViewBindingPro](https://flyjingfish.github.io/ViewBindingPro/zh/)
 
 ### 一、引入插件（必须）
 
