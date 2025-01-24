@@ -32,7 +32,7 @@
 
 # 简述
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用这个框架之后，您在 BaseActivity 或 BaseFragment 等基类配置一个注解就可以为 子类自动注入加载代码
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用这个框架之后，您在 BaseActivity 或 BaseFragment 等基类配置一个注解就可以为 子类自动注入加载代码，无需使用反射
 
 
 ## Star趋势图
