@@ -2,12 +2,13 @@ package com.flyjingfish.viewbindingpro_plugin
 
 import com.flyjingfish.viewbindingpro_plugin.config.RootBooleanConfig
 import com.flyjingfish.viewbindingpro_plugin.plugin.SearchCodePlugin
+import com.flyjingfish.viewbindingpro_plugin.utils.printLog
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class ViewBindingProPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        val enableStr = project.properties[RootBooleanConfig.ENABLE.propertyName]?: RootBooleanConfig.ENABLE.defaultValue
+        val enableStr = project.properties[RootBooleanConfig.ENABLE.propertyName]?: RootBooleanConfig.ENABLE.defaultValue.toString()
         val enable = enableStr == "true"
         if (!enable){
             return

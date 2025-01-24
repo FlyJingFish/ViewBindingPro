@@ -10,6 +10,7 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.zip.ZipInputStream
 
+const val Joined = "Lcom/flyjingfish/viewbindingpro_core/Joined;"
 fun registerCompileTempDir(project: Project, variantName:String):String{
     return project.buildDir.absolutePath + "/tmp/viewbindingpro/${variantName}/tempCompileClass/".adapterOSPath()
 }

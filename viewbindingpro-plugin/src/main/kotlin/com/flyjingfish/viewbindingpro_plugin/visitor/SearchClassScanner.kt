@@ -4,6 +4,7 @@ import androidx.viewbinding.ViewBinding
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
 import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.BindingUtils
+import com.flyjingfish.viewbindingpro_plugin.utils.Joined
 import com.flyjingfish.viewbindingpro_plugin.utils.slashToDot
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassVisitor
@@ -107,11 +108,25 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     ) : MethodVisitor(
         Opcodes.ASM9,methodVisitor
     ) {
+        private var isJoined = false
+        override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
+            // 检查是否已有目标注解
+            if (Joined == descriptor) {
+                isJoined = true // 标记为已存在
+            }
+            return super.visitAnnotation(descriptor, visible)
+        }
 
         override fun visitCode() {
+            val bindingBean = bindingInfo
+            if (!isJoined && bindingBean != null){
+                val av = mv.visitAnnotation(Joined, true)
+                av?.visitEnd()
+            }
             super.visitCode()
-            val bindingBean = bindingInfo ?: return
-            isSetBindingInfo = AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
+            if (!isJoined && bindingBean != null){
+                isSetBindingInfo = AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
+            }
         }
 
         override fun visitMethodInsn(

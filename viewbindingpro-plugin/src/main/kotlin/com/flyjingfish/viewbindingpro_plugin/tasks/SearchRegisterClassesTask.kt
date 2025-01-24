@@ -2,12 +2,12 @@ package com.flyjingfish.viewbindingpro_plugin.tasks
 
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
 import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
+import com.flyjingfish.viewbindingpro_plugin.utils.Joined
 import com.flyjingfish.viewbindingpro_plugin.utils.checkExist
 import com.flyjingfish.viewbindingpro_plugin.utils.getRelativePath
 import com.flyjingfish.viewbindingpro_plugin.utils.registerCompileTempDir
 import com.flyjingfish.viewbindingpro_plugin.utils.saveEntry
 import com.flyjingfish.viewbindingpro_plugin.utils.saveFile
-import com.flyjingfish.viewbindingpro_plugin.visitor.MethodParamNamesScanner
 import com.flyjingfish.viewbindingpro_plugin.visitor.SearchClassScanner
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -19,9 +19,6 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import org.objectweb.asm.commons.Method
-import org.objectweb.asm.tree.LocalVariableNode
-import org.objectweb.asm.tree.MethodNode
 import java.io.File
 import java.io.FileInputStream
 import kotlin.system.measureTimeMillis
@@ -74,7 +71,7 @@ class SearchRegisterClassesTask(
 
 
     private fun wovenCode() = runBlocking{
-        val wovenCodeJobs = mutableListOf<Deferred<Unit>>()
+        val wovenCodeJobs = mutableListOf<Deferred<Any>>()
         allDirectories.forEach { directory ->
             directory.walk().forEach { file ->
                 if (file.isFile) {
@@ -124,6 +121,13 @@ class SearchRegisterClassesTask(
             }
 
         }
+        val job = async(Dispatchers.IO) {
+            val tmpCompileDir = File(registerCompileTempDir(project,variantName))
+            tmpCompileDir.deleteRecursively()
+        }
+        wovenCodeJobs.add(job)
+
+
         wovenCodeJobs.awaitAll()
     }
 
@@ -133,7 +137,8 @@ class SearchRegisterClassesTask(
         val isVoid = Type.getReturnType(methodDescriptor).className == "void"
         val argTypes = Type.getArgumentTypes(methodDescriptor)
         mv.visitCode()
-
+        val av = mv.visitAnnotation(Joined, true)
+        av.visitEnd()
         AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
         // 调用 super.someMethod() 的字节码指令
         mv.visitVarInsn(Opcodes.ALOAD, 0) // 加载 `this` 引用到操作数栈

@@ -14,6 +14,7 @@ abstract class BaseActivity<VB :ViewBinding>:AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        setBinding()
         setContentView(binding.root)
     }
 
