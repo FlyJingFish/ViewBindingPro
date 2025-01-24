@@ -54,14 +54,12 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     }
 
     private fun parseGenericSignature(signature: String?,bindingBean: BindingBean) {
-        println("Parsing Generic Signature: $signature")
         // 使用 ASM 提供的 SignatureReader 解析签名
         val signatureReader = SignatureReader(signature)
         var isRegister = false
         signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
             private var index = 0
             override fun visitClassType(name: String?) {
-                println("Generic Type: $name,index=$index")
                 if (index >0 && name != null && BindingUtils.isViewBindingClass(name) && bindingBean.position == index-1){
                     isRegister = true
                     bindingInfo = bindingBean
@@ -162,7 +160,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
 
         override fun visitEnd() {
             super.visitEnd()
-            println("position=$position,methodName=$methodName,methodDesc=$methodDesc,bindingType=$bindingType,isProtected=$isProtected")
             if (position != null && methodName != null && methodDesc != null && bindingType != null && isProtected!= null){
                 BindingUtils.addBindingInfo(BindingBean(className,fieldName,position!!,methodName!!,methodDesc!!,bindingType!!,isProtected!!))
             }
