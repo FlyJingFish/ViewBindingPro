@@ -137,7 +137,7 @@ class SearchRegisterClassesTask(
         val isVoid = Type.getReturnType(methodDescriptor).className == "void"
         val argTypes = Type.getArgumentTypes(methodDescriptor)
         mv.visitCode()
-        val av = mv.visitAnnotation(Joined, true)
+        val av = mv.visitAnnotation(Joined, false)
         av.visitEnd()
         AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
         // 调用 super.someMethod() 的字节码指令

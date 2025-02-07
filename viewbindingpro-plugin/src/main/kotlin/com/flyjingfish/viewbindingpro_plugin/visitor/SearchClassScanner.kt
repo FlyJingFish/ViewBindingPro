@@ -120,7 +120,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         override fun visitCode() {
             val bindingBean = bindingInfo
             if (!isJoined && bindingBean != null){
-                val av = mv.visitAnnotation(Joined, true)
+                val av = mv.visitAnnotation(Joined, false)
                 av?.visitEnd()
             }
             super.visitCode()
