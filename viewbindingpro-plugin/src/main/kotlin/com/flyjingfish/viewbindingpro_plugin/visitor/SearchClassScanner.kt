@@ -1,10 +1,11 @@
 package com.flyjingfish.viewbindingpro_plugin.visitor
 
-import androidx.viewbinding.ViewBinding
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
+import com.flyjingfish.viewbindingpro_plugin.bean.BindingClassBean
 import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.BindingUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.Joined
+import com.flyjingfish.viewbindingpro_plugin.utils.ViewBindingName
 import com.flyjingfish.viewbindingpro_plugin.utils.slashToDot
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassVisitor
@@ -19,11 +20,16 @@ import org.objectweb.asm.signature.SignatureVisitor
 class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNotWovenMethod: OnBackNotWovenMethod?=null) : ClassVisitor(Opcodes.ASM9,classVisitor) {
     private lateinit var className:String
     private var bindingInfo: BindingBean ?= null
+    private var bindingClassInfo: BindingClassBean ?= null
     private var superName: String? =null
+    private var signature: String? =null
     private var isSetBindingInfo: Boolean = false
+    private var isSetBindingClassInfo: Boolean = false
     private lateinit var viewBindingClass: String
-    fun interface OnBackNotWovenMethod{
+    private lateinit var bindingClass: String
+    interface OnBackNotWovenMethod{
         fun onBack(bindingInfo: BindingBean,superName: String?,viewBindingClass:String)
+        fun onBack(bindingInfo: BindingClassBean,superName: String?,bindingClass:String)
     }
     override fun visit(
         version: Int,
@@ -36,14 +42,20 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         super.visit(version, access, name, signature, superName, interfaces)
         className = name
         this.superName = superName
+        this.signature = signature
         val bindingBean = BindingUtils.isExtendBaseClass(superName)
         if (superName != null && bindingBean != null){
             parseGenericSignature(signature,bindingBean)
         }
+
+        val bindingClassBean = BindingUtils.isExtendBaseBindClass(superName)
+        if (superName != null && bindingClassBean != null){
+            parseGenericSignature(signature,bindingClassBean)
+        }
         interfaces?.let {
             var isViewBinding = false
             for (s in it) {
-                if (slashToDot(s) == ViewBinding::class.java.name){
+                if (slashToDot(s) == ViewBindingName){
                     isViewBinding = true
                     break
                 }
@@ -55,25 +67,51 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     }
 
     private fun parseGenericSignature(signature: String?,bindingBean: BindingBean) {
-        // 使用 ASM 提供的 SignatureReader 解析签名
-        val signatureReader = SignatureReader(signature)
         var isRegister = false
-        signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
-            private var index = 0
-            override fun visitClassType(name: String?) {
-                if (index >0 && name != null && BindingUtils.isViewBindingClass(name) && bindingBean.position == index-1){
-                    isRegister = true
-                    bindingInfo = bindingBean
-                    viewBindingClass = name
+        // 使用 ASM 提供的 SignatureReader 解析签名
+        if (signature != null){
+            val signatureReader = SignatureReader(signature)
+            signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
+                private var index = 0
+                override fun visitClassType(name: String?) {
+                    if (index >0 && name != null && BindingUtils.isViewBindingClass(name) && bindingBean.position == index-1){
+                        isRegister = true
+                        bindingInfo = bindingBean
+                        viewBindingClass = name
+                    }
+                    super.visitClassType(name)
+                    index++
                 }
-                super.visitClassType(name)
-                index++
-            }
 
-        })
+            })
+        }
         if (!isRegister){
 //            BindingUtils.addBindingInfo4Extends(className,BindingBean(className,bindingBean.fieldName,bindingBean.position,bindingBean.methodName,bindingBean.methodDesc,bindingBean.bindingType))
             BindingUtils.addBindingInfo4Extends(className,bindingBean)
+        }
+    }
+
+    private fun parseGenericSignature(signature: String?,bindingBean: BindingClassBean) {
+        var isRegister = false
+        // 使用 ASM 提供的 SignatureReader 解析签名
+        if (signature != null){
+            val signatureReader = SignatureReader(signature)
+            signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
+                private var index = 0
+                override fun visitClassType(name: String?) {
+                    if (index >0 && name != null && bindingBean.position == index-1){
+                        isRegister = true
+                        bindingClassInfo = bindingBean
+                        bindingClass = name
+                    }
+                    super.visitClassType(name)
+                    index++
+                }
+
+            })
+        }
+        if (!isRegister){
+            BindingUtils.addBindClassInfo4Extends(className,bindingBean)
         }
     }
 
@@ -83,7 +121,9 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         signature: String?, exceptions: Array<String?>?
     ): MethodVisitor? {
         val bindingBean = bindingInfo
-        return if (bindingBean != null && bindingBean.methodName == name && bindingBean.methodDesc == descriptor){
+        val bindingClassBean = bindingClassInfo
+        return if ((bindingBean != null && bindingBean.methodName == name && bindingBean.methodDesc == descriptor)||
+            (bindingClassBean != null && bindingClassBean.insertMethodName == name && bindingClassBean.insertMethodDesc == descriptor)){
             MyMethodVisitor(
                 super.visitMethod(access, name, descriptor, signature, exceptions)
             )
@@ -98,6 +138,11 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         val bindingBean = bindingInfo
         if (!isSetBindingInfo && bindingBean != null && ::viewBindingClass.isInitialized){
             onBackNotWovenMethod?.onBack(bindingBean,superName,viewBindingClass)
+        }
+
+        val bindingClassBean = bindingClassInfo
+        if (!isSetBindingClassInfo && bindingClassBean != null && ::bindingClass.isInitialized){
+            onBackNotWovenMethod?.onBack(bindingClassBean,superName,bindingClass)
         }
 
     }
@@ -119,7 +164,8 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
 
         override fun visitCode() {
             val bindingBean = bindingInfo
-            if (!isJoined && bindingBean != null){
+            val bindingClassBean = bindingClassInfo
+            if (!isJoined && (bindingBean != null || bindingClassBean != null)){
                 val av = mv.visitAnnotation(Joined, false)
                 av?.visitEnd()
             }
@@ -127,41 +173,42 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             if (!isJoined && bindingBean != null){
                 isSetBindingInfo = AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
             }
+
+            if (!isJoined && bindingClassBean != null){
+                isSetBindingClassInfo = AsmUtils.addBindingClassCode(bindingClassBean,bindingClass, mv)
+            }
+
         }
 
-        override fun visitMethodInsn(
-            opcode: Int,
-            owner: String,
-            name: String,
-            descriptor: String,
-            isInterface: Boolean
-        ) {
-
-
-            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
-        }
-
-        override fun visitEnd() {
-            super.visitEnd()
-        }
     }
 
 
-    internal inner class FieldAnnoVisitor(private val fieldName :String,annotationVisitor:AnnotationVisitor?) : AnnotationVisitor(Opcodes.ASM9,annotationVisitor) {
+    internal inner class FieldAnnoVisitor(private val fieldName :String,private val type :AnnoType,annotationVisitor:AnnotationVisitor?) : AnnotationVisitor(Opcodes.ASM9,annotationVisitor) {
         private var position: Int? = null
         private var methodName: String? = null
         private var methodDesc: String? = null
+        private var callMethodName: String? = null
+        private var callMethodDesc: String? = null
         private var bindingType: String? = null
         private var isProtected: Boolean? = null
         override fun visit(name: String, value: Any) {
-            if (name == "position") {
-                position = value.toString().toInt()
-            }else if (name == "methodName") {
-                val method = Method.getMethod(value.toString())
-                methodName = method.name
-                methodDesc = method.descriptor
-            }else if (name == "isProtected"){
-                isProtected = value.toString().toBoolean()
+            when (name) {
+                "position" -> {
+                    position = value.toString().toInt()
+                }
+                "methodName","insertMethodName" -> {
+                    val method = Method.getMethod(value.toString())
+                    methodName = method.name
+                    methodDesc = method.descriptor
+                }
+                "callMethodName" -> {
+                    val method = Method.getMethod(value.toString())
+                    callMethodName = method.name
+                    callMethodDesc = method.descriptor
+                }
+                "isProtected" -> {
+                    isProtected = value.toString().toBoolean()
+                }
             }
             super.visit(name, value)
         }
@@ -175,8 +222,30 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
 
         override fun visitEnd() {
             super.visitEnd()
-            if (position != null && methodName != null && methodDesc != null && bindingType != null && isProtected!= null){
+            if (type == AnnoType.BindViewBinding && position != null && methodName != null && methodDesc != null && bindingType != null && isProtected!= null){
                 BindingUtils.addBindingInfo(BindingBean(className,fieldName,position!!,methodName!!,methodDesc!!,bindingType!!,isProtected!!))
+            }
+
+            if (type == AnnoType.BindClass && position != null && methodName != null && methodDesc != null && callMethodName != null && callMethodDesc!= null && isProtected!= null){
+                var baseClass :String ?= null
+                if (signature != null){
+                    val signatureReader = SignatureReader(signature)
+                    signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
+                        private var index = 0
+                        override fun visitClassType(name: String?) {
+                            if (index >0 && name != null && position == index-1){
+                                baseClass = name
+                            }
+                            super.visitClassType(name)
+                            index++
+                        }
+                    })
+                }
+
+                baseClass?.let {
+                    BindingUtils.addBaseBindClass(it)
+                    BindingUtils.addBindClassInfo(BindingClassBean(className,it,fieldName,position!!,methodName!!,methodDesc!!,callMethodName!!,callMethodDesc!!,isProtected!!))
+                }
             }
 
         }
@@ -202,13 +271,25 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         Opcodes.ASM9,fieldVisitor
     ) {
         override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
-            return if (Type.getType(descriptor).className == "com.flyjingfish.viewbindingpro_core.BindViewBinding"){
-                FieldAnnoVisitor(fieldName,super.visitAnnotation(descriptor, visible))
-            }else{
-                super.visitAnnotation(descriptor, visible)
+            return when (Type.getType(descriptor).className) {
+                "com.flyjingfish.viewbindingpro_core.BindViewBinding" -> {
+                    FieldAnnoVisitor(fieldName,
+                        AnnoType.BindViewBinding,super.visitAnnotation(descriptor, visible))
+                }
+                "com.flyjingfish.viewbindingpro_core.BindClass" -> {
+                    FieldAnnoVisitor(fieldName,
+                        AnnoType.BindClass,super.visitAnnotation(descriptor, visible))
+                }
+                else -> {
+                    super.visitAnnotation(descriptor, visible)
+                }
             }
         }
 
+    }
+
+    enum class AnnoType{
+        BindViewBinding,BindClass
     }
 
 

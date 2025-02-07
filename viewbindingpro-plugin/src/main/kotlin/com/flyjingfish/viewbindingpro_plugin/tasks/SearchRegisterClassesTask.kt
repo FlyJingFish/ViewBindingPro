@@ -1,6 +1,7 @@
 package com.flyjingfish.viewbindingpro_plugin.tasks
 
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
+import com.flyjingfish.viewbindingpro_plugin.bean.BindingClassBean
 import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.Joined
 import com.flyjingfish.viewbindingpro_plugin.utils.checkExist
@@ -17,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.gradle.api.Project
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.io.File
@@ -89,19 +91,54 @@ class SearchRegisterClassesTask(
                                     var bindingBean : BindingBean ?= null
                                     var superClassname : String ?= null
                                     var viewBindingClassname : String ?= null
+                                    var bindingClassBean : BindingClassBean ?= null
+                                    var bindingClassname : String ?= null
                                     cr.accept(
-                                        SearchClassScanner(cw
-                                        ) { bindingInfo,superClass,viewBindingClass ->
-                                            bindingBean = bindingInfo
-                                            superClassname = superClass
-                                            viewBindingClassname = viewBindingClass
-                                        },
+                                        SearchClassScanner(cw,object :SearchClassScanner.OnBackNotWovenMethod{
+                                            override fun onBack(
+                                                bindingInfo: BindingBean,
+                                                superName: String?,
+                                                viewBindingClass: String
+                                            ) {
+                                                bindingBean = bindingInfo
+                                                superClassname = superName
+                                                viewBindingClassname = viewBindingClass
+                                            }
+
+                                            override fun onBack(
+                                                bindingInfo: BindingClassBean,
+                                                superName: String?,
+                                                bindingClass: String
+                                            ) {
+                                                bindingClassBean = bindingInfo
+                                                superClassname = superName
+                                                bindingClassname = bindingClass
+                                            }
+
+                                        }
+                                        ) ,
                                         0
                                     )
                                     val bindingInfo = bindingBean
                                     val viewBindingClass = viewBindingClassname
+                                    val bindClassInfo = bindingClassBean
+                                    val bindingClass = bindingClassname
+                                    val isSingle = bindingInfo != null && bindClassInfo != null
+                                            && bindingInfo.methodName == bindClassInfo.insertMethodName
+                                            && bindingInfo.methodDesc == bindClassInfo.insertMethodDesc
+
+                                    var mv:MethodVisitor ?= null
                                     if (bindingInfo != null && viewBindingClass != null){
-                                        wovenMethodCode(bindingInfo,viewBindingClass,cw,superClassname!!, bindingInfo.methodName,bindingInfo.methodName,bindingInfo.methodDesc,if (bindingInfo.isProtected) Opcodes.ACC_PROTECTED else Opcodes.ACC_PUBLIC)
+                                        mv = wovenMethodCode(bindingInfo,viewBindingClass,cw,superClassname!!, bindingInfo.methodName,bindingInfo.methodName,bindingInfo.methodDesc,if (bindingInfo.isProtected) Opcodes.ACC_PROTECTED else Opcodes.ACC_PUBLIC,!isSingle)
+                                    }
+
+
+                                    if (bindClassInfo != null && bindingClass != null){
+                                        mv = wovenMethodCode(mv,bindClassInfo,bindingClass,cw,superClassname!!, bindClassInfo.insertMethodName,bindClassInfo.insertMethodName,bindClassInfo.insertMethodDesc,if (bindClassInfo.isProtected) Opcodes.ACC_PROTECTED else Opcodes.ACC_PUBLIC,!isSingle)
+                                    }
+
+                                    if (isSingle && mv != null && bindClassInfo != null){
+                                        wovenMethodCodeEnd(mv,superClassname!!, bindClassInfo.insertMethodName,bindClassInfo.insertMethodDesc)
                                     }
 
                                     cw.toByteArray().saveFile(outFile)
@@ -132,18 +169,40 @@ class SearchRegisterClassesTask(
     }
 
 
-    private fun wovenMethodCode(bindingBean : BindingBean,viewBindingClass:String,cw: ClassWriter, superClassName:String, superMethodName:String, methodName:String, methodDescriptor:String, methodAccess:Int){
+    private fun wovenMethodCode(bindingBean : BindingBean,viewBindingClass:String,cw: ClassWriter, superClassName:String, superMethodName:String, methodName:String, methodDescriptor:String, methodAccess:Int,isEnd:Boolean):MethodVisitor{
         val mv = cw.visitMethod(methodAccess, methodName, methodDescriptor, null, null)
-        val isVoid = Type.getReturnType(methodDescriptor).className == "void"
-        val argTypes = Type.getArgumentTypes(methodDescriptor)
         mv.visitCode()
         val av = mv.visitAnnotation(Joined, false)
         av.visitEnd()
         AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
         // 调用 super.someMethod() 的字节码指令
+        if (isEnd){
+            wovenMethodCodeEnd(mv, superClassName, superMethodName, methodDescriptor)
+        }
+        return mv
+    }
+
+    private fun wovenMethodCode(oldMv: MethodVisitor?,bindingBean : BindingClassBean,viewBindingClass:String,cw: ClassWriter, superClassName:String, superMethodName:String, methodName:String, methodDescriptor:String, methodAccess:Int,isEnd:Boolean):MethodVisitor{
+        val mv = oldMv ?: cw.visitMethod(methodAccess, methodName, methodDescriptor, null, null)
+        mv.visitCode()
+        if (oldMv == null){
+            val av = mv.visitAnnotation(Joined, false)
+            av.visitEnd()
+        }
+        AsmUtils.addBindingClassCode(bindingBean,viewBindingClass, mv)
+        // 调用 super.someMethod() 的字节码指令
+        if (isEnd){
+            wovenMethodCodeEnd(mv, superClassName, superMethodName, methodDescriptor)
+        }
+        return mv
+    }
+
+    private fun wovenMethodCodeEnd(mv: MethodVisitor, superClassName:String, superMethodName:String,methodDescriptor:String){
+        // 调用 super.someMethod() 的字节码指令
         mv.visitVarInsn(Opcodes.ALOAD, 0) // 加载 `this` 引用到操作数栈
         var localVarIndex = 1
         var maxStack = 1
+        val argTypes = Type.getArgumentTypes(methodDescriptor)
         for (argType in argTypes) {
             maxStack += when (argType.sort) {
                 Type.LONG , Type.DOUBLE -> {
@@ -171,7 +230,7 @@ class SearchRegisterClassesTask(
             localVarIndex += argType.size // 更新下一个局部变量的索引
 
         }
-
+        val isVoid = Type.getReturnType(methodDescriptor).className == "void"
         mv.visitMethodInsn(
             Opcodes.INVOKESPECIAL,
             superClassName,

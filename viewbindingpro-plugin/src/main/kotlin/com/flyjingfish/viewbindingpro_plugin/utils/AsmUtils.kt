@@ -1,12 +1,14 @@
 package com.flyjingfish.viewbindingpro_plugin.utils
 
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
+import com.flyjingfish.viewbindingpro_plugin.bean.BindingClassBean
 import com.flyjingfish.viewbindingpro_plugin.tasks.SearchRegisterClassesTask
 import com.flyjingfish.viewbindingpro_plugin.visitor.SearchClassScanner
 import org.gradle.api.Project
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
 import java.io.File
 import java.io.FileInputStream
 import java.util.jar.JarFile
@@ -126,5 +128,29 @@ object AsmUtils {
             }
         }
         return isSetBindingInfo
+    }
+
+    fun addBindingClassCode(bindingBean:BindingClassBean,viewBindingClass:String,mv: MethodVisitor):Boolean {
+        try {
+            mv.visitVarInsn(Opcodes.ALOAD, 0)
+            mv.visitLdcInsn(Type.getObjectType(slashToDot(viewBindingClass)))  // 加载类名
+            mv.visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                bindingBean.className,
+                bindingBean.callMethodName,
+                bindingBean.callMethodDesc,
+                false)
+            mv.visitVarInsn(Opcodes.ALOAD, 0);  // 再次加载 "this"
+            mv.visitInsn(Opcodes.SWAP);  // 交换栈顶，使 this 在前
+            mv.visitFieldInsn(
+                Opcodes.PUTFIELD,
+                bindingBean.className, bindingBean.fieldName,
+                "L"+ dotToSlash(bindingBean.baseClassName) +";")
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+
     }
 }

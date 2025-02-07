@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException
 import java.util.zip.ZipInputStream
 
 const val Joined = "Lcom/flyjingfish/viewbindingpro_core/Joined;"
+const val ViewBindingName = "androidx.viewbinding.ViewBinding"
 fun registerCompileTempDir(project: Project, variantName:String):String{
     return project.buildDir.absolutePath + "/tmp/viewbindingpro/${variantName}/tempCompileClass/".adapterOSPath()
 }

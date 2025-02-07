@@ -10,5 +10,5 @@ import androidx.annotation.Nullable;
 
 import com.flyjingfish.viewbindingpro.databinding.ActivityMainBinding;
 
-public class ExampleFragment extends BaseFragment<ActivityMainBinding>{
+public class ExampleFragment extends BaseVMFragment<ActivityMainBinding,ExampleViewModel>{
 }
