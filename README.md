@@ -1,3 +1,7 @@
+<h4 align="right">
+  <strong>English</strong> | <a href="https://github.com/FlyJingFish/AndroidAOP/blob/master/README.md">简体中文</a>
+</h4>
+
 <p align="center"> 
     <strong> 🔥🔥🔥Enhance the usage scenarios of ViewBinding 
         <a>ViewBindingPro</a> 
@@ -66,10 +70,6 @@ motivation. Stars and Issues are welcome!**
 ### 2. Introduce dependent libraries (required)
 
 ```gradle
-plugins {
-    //Optional 👇, if you need to customize the aspect and use the android-aop-ksp library, you need to configure
-    id 'com.google.devtools.ksp'
-}
 
 dependencies {
     //Required 👇

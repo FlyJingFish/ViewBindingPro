@@ -1,3 +1,7 @@
+<h4 align="right">
+  <strong>简体中文</strong> | <a href="https://github.com/FlyJingFish/AndroidAOP/blob/master/README_EN.md">English</a>
+</h4>
+
 <p align="center">
   <strong>
     🔥🔥🔥增强ViewBinding的使用场景
@@ -70,11 +74,6 @@
 ### 二、引入依赖库(必须)
 
 ```gradle
-plugins {
-    //非必须项 👇，如果需要自定义切面，并且使用 android-aop-ksp 这个库的话需要配置 
-    id 'com.google.devtools.ksp'
-}
-
 dependencies {
     //必须项 👇
     implementation 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:1.0.0'
