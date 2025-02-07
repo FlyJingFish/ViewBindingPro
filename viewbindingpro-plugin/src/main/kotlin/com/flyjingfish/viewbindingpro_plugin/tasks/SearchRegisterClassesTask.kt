@@ -158,14 +158,11 @@ class SearchRegisterClassesTask(
             }
 
         }
-        val job = async(Dispatchers.IO) {
-            val tmpCompileDir = File(registerCompileTempDir(project,variantName))
-            tmpCompileDir.deleteRecursively()
-        }
-        wovenCodeJobs.add(job)
-
 
         wovenCodeJobs.awaitAll()
+
+        val tmpCompileDir = File(registerCompileTempDir(project,variantName))
+        tmpCompileDir.deleteRecursively()
     }
 
 
@@ -184,8 +181,8 @@ class SearchRegisterClassesTask(
 
     private fun wovenMethodCode(oldMv: MethodVisitor?,bindingBean : BindingClassBean,viewBindingClass:String,cw: ClassWriter, superClassName:String, superMethodName:String, methodName:String, methodDescriptor:String, methodAccess:Int,isEnd:Boolean):MethodVisitor{
         val mv = oldMv ?: cw.visitMethod(methodAccess, methodName, methodDescriptor, null, null)
-        mv.visitCode()
         if (oldMv == null){
+            mv.visitCode()
             val av = mv.visitAnnotation(Joined, false)
             av.visitEnd()
         }
