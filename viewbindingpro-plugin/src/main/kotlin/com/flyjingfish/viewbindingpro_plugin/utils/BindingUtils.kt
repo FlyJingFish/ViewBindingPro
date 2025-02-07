@@ -5,6 +5,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 object BindingUtils {
 //    private val baseClassSet = mutableSetOf<String>()
+    fun clear(){
+        classMap.clear()
+        viewBindingSet.clear()
+    }
     private val classMap = ConcurrentHashMap<String,BindingBean>()
     private val viewBindingSet = mutableSetOf<String>()
     fun addBindingInfo(bindingBean: BindingBean){

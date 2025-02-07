@@ -121,14 +121,11 @@ class SearchRegisterClassesTask(
             }
 
         }
-        val job = async(Dispatchers.IO) {
-            val tmpCompileDir = File(registerCompileTempDir(project,variantName))
-            tmpCompileDir.deleteRecursively()
-        }
-        wovenCodeJobs.add(job)
-
 
         wovenCodeJobs.awaitAll()
+
+        val tmpCompileDir = File(registerCompileTempDir(project,variantName))
+        tmpCompileDir.deleteRecursively()
     }
 
 

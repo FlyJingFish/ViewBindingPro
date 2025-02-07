@@ -2,6 +2,7 @@ package com.flyjingfish.viewbindingpro_plugin
 
 import com.flyjingfish.viewbindingpro_plugin.config.RootBooleanConfig
 import com.flyjingfish.viewbindingpro_plugin.plugin.SearchCodePlugin
+import com.flyjingfish.viewbindingpro_plugin.utils.BindingUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.printLog
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -14,6 +15,7 @@ class ViewBindingProPlugin : Plugin<Project> {
             return
         }
         if (project.rootProject == project){
+            BindingUtils.clear()
             deepSetDebugMode(project.rootProject)
         }
         SearchCodePlugin(false).apply(project)
