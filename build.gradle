@@ -79,11 +79,7 @@ task aaBumpVersion() {
         versionProps.store(versionPropsFile.newWriter(), null)
 
         updateREADME("README.md",oldVersionName,newVersionName)
-        updateREADME("README_EN.md",oldVersionName,newVersionName)
-        updateREADME("docs/getting_started.md",oldVersionName,newVersionName)
-        updateREADME("docs/android_aop_extra.md",oldVersionName,newVersionName)
-        updateREADME("docs/zh/getting_started.md",oldVersionName,newVersionName)
-        updateREADME("docs/zh/android_aop_extra.md",oldVersionName,newVersionName)
+        updateREADME("README-zh.md",oldVersionName,newVersionName)
 
         File gradleFile = new File("gradle.properties")
         String gradleText = gradleFile.text
@@ -99,14 +95,9 @@ task aaBumpVersion() {
 def updateREADME(readme,oldVersionName,newVersionName) {
     File configFile = new File(readme)
     String exportText = configFile.text
-    String text = exportText.replace("io.github.FlyJingFish.AndroidAop:android-aop-plugin:"+oldVersionName,"io.github.FlyJingFish.AndroidAop:android-aop-plugin:"+newVersionName)
-    text = text.replace("io.github.FlyJingFish.AndroidAop:android-aop-core:"+oldVersionName,"io.github.FlyJingFish.AndroidAop:android-aop-core:"+newVersionName)
-    text = text.replace("io.github.FlyJingFish.AndroidAop:android-aop-annotation:"+oldVersionName,"io.github.FlyJingFish.AndroidAop:android-aop-annotation:"+newVersionName)
-    text = text.replace("io.github.FlyJingFish.AndroidAop:android-aop-extra:"+oldVersionName,"io.github.FlyJingFish.AndroidAop:android-aop-extra:"+newVersionName)
-    text = text.replace("io.github.FlyJingFish.AndroidAop:android-aop-processor:"+oldVersionName,"io.github.FlyJingFish.AndroidAop:android-aop-processor:"+newVersionName)
-    text = text.replace("io.github.FlyJingFish.AndroidAop:android-aop-ksp:"+oldVersionName,"io.github.FlyJingFish.AndroidAop:android-aop-ksp:"+newVersionName)
-    text = text.replace("id \"io.github.FlyJingFish.AndroidAop.android-aop\" version \""+oldVersionName+"\"","id \"io.github.FlyJingFish.AndroidAop.android-aop\" version \""+newVersionName+"\"")
-    text = text.replace("id(\"io.github.FlyJingFish.AndroidAop.android-aop\") version \""+oldVersionName+"\"","id(\"io.github.FlyJingFish.AndroidAop.android-aop\") version \""+newVersionName+"\"")
+    String text = exportText.replace("io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:"+oldVersionName,"io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:"+newVersionName)
+    text = text.replace("io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:"+oldVersionName,"io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:"+newVersionName)
+    text = text.replace("id \"io.github.FlyJingFish.ViewBindingPro\" version \""+oldVersionName+"\"","id \"io.github.FlyJingFish.ViewBindingPro\" version \""+newVersionName+"\"")
     configFile.write(text)
 }
 

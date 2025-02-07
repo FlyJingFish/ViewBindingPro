@@ -53,7 +53,7 @@
   
   plugins {
       //必须项 👇 apply 设置为 true 自动为所有module“预”配置debugMode，false则按下边步骤五的方式二
-      id "io.github.FlyJingFish.ViewBindingPro" version "1.0.0" apply true
+      id "io.github.FlyJingFish.ViewBindingPro" version "1.0.1" apply true
   }
   ```
   
@@ -63,7 +63,7 @@
     buildscript {
         dependencies {
             //必须项 👇
-            classpath 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:1.0.0'
+            classpath 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:1.0.1'
         }
     }
     // 👇加上这句自动为所有module“预”配置debugMode，不加则按下边步骤五的方式二
@@ -76,9 +76,13 @@
 ```gradle
 dependencies {
     //必须项 👇
-    implementation 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:1.0.0'
+    implementation 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:1.0.1'
 }
 ```
+
+> [!TIP]
+> 如果你希望打包后的代码中不包含 `viewbindingpro-core` 库，可以改为 `compileOnly` 方式引入
+
 
 ### 三、使用方法
 
