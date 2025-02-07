@@ -125,10 +125,24 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
 
 ### 4.Switch(optional)
 
+Add the following settings to the root directory's `gradle.properties`
+
 ```properties
 #Set to false to turn off the automatic injection function
 viewbindingpro.enable = true
 ```
+
+### Extra
+
+If your module is all kotlin code, the plugin may not work. There are currently two ways to deal with it
+
+- 1. Add the following settings to the root directory's `gradle.properties`
+
+```properties
+android.defaults.buildfeatures.buildconfig=true
+```
+
+- 2. Manually add a java code to the module that does not work
 
 ### Finally, I recommend some other libraries I wrote
 

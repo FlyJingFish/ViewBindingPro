@@ -120,12 +120,24 @@ abstract class BaseFragment<VB : ViewBinding>: Fragment() {
 
 ### 四、开关（非必须）
 
+在根目录的 `gradle.properties` 中增加如下设置
+
 ```properties
 #设置为false即可关闭自动注入功能
 viewbindingpro.enable = true 
 ```
 
+### 番外
 
+如果你的module全部为 kotlin 代码，有可能插件不生效，目前的处理方法有两个
+
+- 1、在根目录的 `gradle.properties` 中增加如下设置
+
+```properties
+android.defaults.buildfeatures.buildconfig=true
+```
+
+- 2、手动为不起作用的 module 增加一个 java 代码
 
 ### 最后推荐我写的另外一些库
 
