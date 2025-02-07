@@ -5,6 +5,12 @@ import com.flyjingfish.viewbindingpro_plugin.bean.BindingClassBean
 import java.util.concurrent.ConcurrentHashMap
 
 object BindingUtils {
+    fun clear(){
+        viewBindingMap.clear()
+        bindClassMap.clear()
+        viewBindingSet.clear()
+        baseBindClassSet.clear()
+    }
 //    private val baseClassSet = mutableSetOf<String>()
     private val viewBindingMap = ConcurrentHashMap<String,BindingBean>()
     private val bindClassMap = ConcurrentHashMap<String,BindingClassBean>()
