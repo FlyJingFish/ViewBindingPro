@@ -37,7 +37,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     }
 
     override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
-        println("visitAnnotation=descriptor=$descriptor")
         if (descriptor == CancelBindViewBinding){
             cancelBindViewBinding = true
         }
@@ -88,7 +87,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     }
 
     private fun parseGenericSignature(signature: String?,bindingBean: BindingBean) {
-        println("class=$className,parseGenericSignature2")
         var isRegister = false
         // 使用 ASM 提供的 SignatureReader 解析签名
         if (signature != null){
@@ -96,7 +94,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
                 private var index = 0
                 override fun visitClassType(name: String?) {
-                    println("class=$className,parseGenericSignature2,name=$name,index=$index")
                     if (index >0 && name != null && BindingUtils.isViewBindingClass(name) && bindingBean.position == index-1){
                         isRegister = true
                         bindingInfo = bindingBean
@@ -115,7 +112,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     }
 
     private fun parseGenericSignature(signature: String?,bindingBean: BindingClassBean) {
-        println("class=$className,parseGenericSignature1")
         var isRegister = false
         // 使用 ASM 提供的 SignatureReader 解析签名
         if (signature != null){
@@ -123,7 +119,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
                 private var index = 0
                 override fun visitClassType(name: String?) {
-                    println("class=$className,parseGenericSignature1,name=$name,index=$index")
                     if (index >0 && name != null && bindingBean.position == index-1){
                         isRegister = true
                         bindingClassInfo = bindingBean
@@ -135,7 +130,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
 
             })
         }
-        println("class=$className,parseGenericSignature,bindingClassInfo=$bindingClassInfo,bindingClass=$bindingClass")
         if (!isRegister){
             BindingUtils.addBindClassInfo4Extends(className,bindingBean)
         }
@@ -191,7 +185,6 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         override fun visitCode() {
             val bindingBean = bindingInfo
             val bindingClassBean = bindingClassInfo
-            println("visitCode=bindingBean=$bindingBean,bindingClassBean=$bindingClassBean")
             val join = isJoined
             if (!join && (bindingBean != null || bindingClassBean != null)){
                 val av = mv.visitAnnotation(Joined, false)
@@ -199,12 +192,10 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             }
             super.visitCode()
             if (!join && bindingBean != null){
-                println("visitCode=bindingBean=$bindingBean,bindingClassBean=$bindingClassBean,===1")
                 isSetBindingInfo = AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
             }
 
             if (!join && bindingClassBean != null){
-                println("visitCode=bindingBean=$bindingBean,bindingClassBean=$bindingClassBean,====2")
                 isSetBindingClassInfo = AsmUtils.addBindingClassCode(bindingClassBean,bindingClass, mv)
             }
 
@@ -259,12 +250,10 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             if (type == AnnoType.BindClass && position != null && methodName != null && methodDesc != null && callMethodName != null && callMethodDesc!= null && isProtected!= null){
                 var baseClass :String ?= null
                 if (signature != null){
-                    println("visitClassType111,class=${className},signature=$signature")
                     val signatureReader = SignatureReader(signature)
                     signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
                         private var index = 0
                         override fun visitClassType(name: String?) {
-                            println("visitClassType111,class=${className},name=$name,index=$index")
                             if (name != null && position == index){
                                 baseClass = name
                             }

@@ -126,7 +126,6 @@ class SearchRegisterClassesTask(
                                     val isSingle = bindingInfo != null && bindClassInfo != null
                                             && bindingInfo.methodName == bindClassInfo.insertMethodName
                                             && bindingInfo.methodDesc == bindClassInfo.insertMethodDesc
-                                    println("wai====bindingBean=$bindingBean,bindingClassBean=$bindingClassBean")
                                     var mv:MethodVisitor ?= null
                                     if (bindingInfo != null && viewBindingClass != null){
                                         mv = wovenMethodCode(bindingInfo,viewBindingClass,cw,superClassname!!, bindingInfo.methodName,bindingInfo.methodName,bindingInfo.methodDesc,if (bindingInfo.isProtected) Opcodes.ACC_PROTECTED else Opcodes.ACC_PUBLIC,!isSingle)
