@@ -34,6 +34,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     interface OnBackNotWovenMethod{
         fun onBack(bindingInfo: BindingBean,superName: String?,viewBindingClass:String)
         fun onBack(bindingInfo: BindingClassBean,superName: String?,bindingClass:String)
+        fun onModify()
     }
 
     override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
@@ -193,10 +194,12 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             super.visitCode()
             if (!join && bindingBean != null){
                 isSetBindingInfo = AsmUtils.addBindingCode(bindingBean,viewBindingClass, mv)
+                onBackNotWovenMethod?.onModify()
             }
 
             if (!join && bindingClassBean != null){
                 isSetBindingClassInfo = AsmUtils.addBindingClassCode(bindingClassBean,bindingClass, mv)
+                onBackNotWovenMethod?.onModify()
             }
 
         }

@@ -84,8 +84,7 @@ class SearchRegisterClassesTask(
                                 if (bytes.isNotEmpty()) {
                                     val relativePath = file.getRelativePath(directory)
                                     val tmpCompileDir = registerCompileTempDir(project,variantName)
-                                    val outFile = File(tmpCompileDir+File.separatorChar+relativePath)
-                                    outFile.checkExist()
+
                                     val cr = ClassReader(bytes)
                                     val cw = ClassWriter(cr,0)
                                     var bindingBean : BindingBean ?= null
@@ -93,6 +92,7 @@ class SearchRegisterClassesTask(
                                     var viewBindingClassname : String ?= null
                                     var bindingClassBean : BindingClassBean ?= null
                                     var bindingClassname : String ?= null
+                                    var isModify  = false
                                     cr.accept(
                                         SearchClassScanner(cw,object :SearchClassScanner.OnBackNotWovenMethod{
                                             override fun onBack(
@@ -115,6 +115,10 @@ class SearchRegisterClassesTask(
                                                 bindingClassname = bindingClass
                                             }
 
+                                            override fun onModify() {
+                                                isModify  = true
+                                            }
+
                                         }
                                         ) ,
                                         0
@@ -129,20 +133,26 @@ class SearchRegisterClassesTask(
                                     var mv:MethodVisitor ?= null
                                     if (bindingInfo != null && viewBindingClass != null){
                                         mv = wovenMethodCode(bindingInfo,viewBindingClass,cw,superClassname!!, bindingInfo.methodName,bindingInfo.methodName,bindingInfo.methodDesc,if (bindingInfo.isProtected) Opcodes.ACC_PROTECTED else Opcodes.ACC_PUBLIC,!isSingle)
+                                        isModify  = true
                                     }
 
 
                                     if (bindClassInfo != null && bindingClass != null){
                                         mv = wovenMethodCode(mv,bindClassInfo,bindingClass,cw,superClassname!!, bindClassInfo.insertMethodName,bindClassInfo.insertMethodName,bindClassInfo.insertMethodDesc,if (bindClassInfo.isProtected) Opcodes.ACC_PROTECTED else Opcodes.ACC_PUBLIC,!isSingle)
+                                        isModify  = true
                                     }
 
                                     if (isSingle && mv != null && bindClassInfo != null){
                                         wovenMethodCodeEnd(mv,superClassname!!, bindClassInfo.insertMethodName,bindClassInfo.insertMethodDesc)
+                                        isModify  = true
                                     }
-
-                                    cw.toByteArray().saveFile(outFile)
-                                    outFile.inputStream().use {
-                                        file.saveEntry(it)
+                                    if (isModify){
+                                        val outFile = File(tmpCompileDir+File.separatorChar+relativePath)
+                                        outFile.checkExist()
+                                        cw.toByteArray().saveFile(outFile)
+                                        outFile.inputStream().use {
+                                            file.saveEntry(it)
+                                        }
                                     }
 
 
@@ -159,9 +169,10 @@ class SearchRegisterClassesTask(
         }
 
         wovenCodeJobs.awaitAll()
-
-        val tmpCompileDir = File(registerCompileTempDir(project,variantName))
-        tmpCompileDir.deleteRecursively()
+        async(Dispatchers.IO) {
+            val tmpCompileDir = File(registerCompileTempDir(project,variantName))
+            tmpCompileDir.deleteRecursively()
+        }
     }
 
 
