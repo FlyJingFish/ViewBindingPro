@@ -82,6 +82,8 @@ dependencies {
 
 ### 3. Usage
 
+#### ViewBinding
+
 - BaseActivity
 
 ```kotlin
@@ -121,7 +123,55 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
     }
 }
 
+```
+
+#### Binding class 
+- BaseActivity
+```kotlin 
+abstract class BaseVMActivity<VB : ViewBinding, VM : ViewModel> : BaseActivity<VB>() {
+  @BindClass(
+    position = 1,
+    insertMethodName = "void onCreate(android.os.Bundle)",
+    callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",
+    isProtected = true
+  )
+  protected lateinit var mViewModel: VM 
+  
+  fun initViewModel(clazz: Class<out ViewModel>): ViewModel {
+    return ViewModelProvider(this)[clazz]
+  }
+} 
 ``` 
+- BaseFragment 
+```kotlin
+abstract class BaseVMFragment<VB : ViewBinding, VM : ViewModel> : BaseFragment<VB>() {
+  @BindClass(
+    position = 1,
+    insertMethodName = "android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)",
+    callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",
+    isProtected = false
+  )
+  protected lateinit var mViewModel: VM
+
+  fun initViewModel(clazz: Class<out ViewModel>): ViewModel {
+    return ViewModelProvider(this)[clazz]
+  }
+}
+```
+
+Both examples above will call `initViewModel` in the corresponding methods of the implementation class
+
+#### Cancel injection code
+
+```kotlin
+@CancelBindViewBinding
+@CancelBindClass
+class MainActivity:BaseVMActivity<ActivityMainBinding,ExampleViewModel>() {
+}
+```
+
+- CancelBindViewBinding cancels ViewBinding injection
+- CancelBindClass cancels class injection
 
 ### 4.Switch(optional)
 

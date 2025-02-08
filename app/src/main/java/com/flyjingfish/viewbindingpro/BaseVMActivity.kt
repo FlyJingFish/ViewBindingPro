@@ -15,7 +15,7 @@ abstract class BaseVMActivity<VB :ViewBinding,VM: ViewModel>:BaseActivity<VB>() 
     }
 
 
-    protected fun initViewModel(clazz: Class<out ViewModel>):ViewModel {
+    fun initViewModel(clazz: Class<out ViewModel>):ViewModel {
         return ViewModelProvider(this)[clazz]
     }
 }

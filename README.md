@@ -86,6 +86,8 @@ dependencies {
 
 ### 三、使用方法
 
+#### ViewBinding
+
 - BaseActivity
 
 ```kotlin
@@ -117,6 +119,49 @@ abstract class BaseFragment<VB : ViewBinding>: Fragment() {
     }
 }
 ```
+
+#### 绑定class
+
+- BaseActivity
+
+```kotlin
+abstract class BaseVMActivity<VB :ViewBinding,VM: ViewModel>:BaseActivity<VB>() {
+    @BindClass(position = 1, insertMethodName = "void onCreate(android.os.Bundle)", callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",isProtected = false)
+    protected lateinit var mViewModel : VM
+
+
+    fun initViewModel(clazz: Class<out ViewModel>):ViewModel {
+        return ViewModelProvider(this)[clazz]
+    }
+}
+```
+
+- BaseFragment
+
+```kotlin
+abstract class BaseVMFragment<VB :ViewBinding,VM: ViewModel>:BaseFragment<VB>() {
+  @BindClass(position = 1, insertMethodName = "android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)", callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",isProtected = false)
+  protected lateinit var mViewModel : VM
+
+  fun initViewModel(clazz: Class<out ViewModel>):ViewModel {
+    return ViewModelProvider(this)[clazz]
+  }
+}
+```
+
+上述两个例子都会在实现类的相应方法中，调用 `initViewModel`
+
+#### 取消注入代码
+
+```kotlin
+@CancelBindViewBinding
+@CancelBindClass
+class MainActivity:BaseVMActivity<ActivityMainBinding,ExampleViewModel>() {
+}
+```
+
+- CancelBindViewBinding 是取消注入 ViewBinding
+- CancelBindClass 是取消注入 class
 
 ### 四、开关（非必须）
 
