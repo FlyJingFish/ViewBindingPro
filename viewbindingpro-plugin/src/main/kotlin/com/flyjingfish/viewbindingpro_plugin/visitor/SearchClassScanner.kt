@@ -251,25 +251,37 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             }
 
             if (type == AnnoType.BindClass && position != null && methodName != null && methodDesc != null && callMethodName != null && callMethodDesc!= null && isProtected!= null){
-                var baseClass :String ?= null
-                if (signature != null){
-                    val signatureReader = SignatureReader(signature)
-                    signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
-                        private var index = 0
-                        override fun visitClassType(name: String?) {
-                            if (name != null && position == index){
-                                baseClass = name
+                val argTypes = Type.getArgumentTypes(callMethodDesc)
+                if (argTypes.size == 1 && argTypes[0].className == "java.lang.Class"){
+                    var baseClass :String ?= null
+                    if (signature != null){
+                        val signatureReader = SignatureReader(signature)
+                        signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
+                            private var index = 0
+                            override fun visitClassType(name: String?) {
+                                if (name != null && position == index){
+                                    baseClass = name
+                                }
+                                super.visitClassType(name)
+                                index++
                             }
-                            super.visitClassType(name)
-                            index++
-                        }
-                    })
+                        })
+                    }
+
+                    baseClass?.let {
+                        BindingUtils.addBaseBindClass(it)
+                        BindingUtils.addBindClassInfo(BindingClassBean(className,it,fieldName,position!!,methodName!!,methodDesc!!,callMethodName!!,callMethodDesc!!,isProtected!!))
+                    }
+                }else{
+                    if (argTypes.isEmpty()){
+                        throw IllegalArgumentException("callMethodName 必须有参数，且为 java.lang.Class")
+                    }else if (argTypes.size == 1 && argTypes[0].className != "java.lang.Class"){
+                        throw IllegalArgumentException("callMethodName 的参数类型必须为 java.lang.Class")
+                    }else {
+                        throw IllegalArgumentException("callMethodName 必须只能有一个参数，且为 java.lang.Class")
+                    }
                 }
 
-                baseClass?.let {
-                    BindingUtils.addBaseBindClass(it)
-                    BindingUtils.addBindClassInfo(BindingClassBean(className,it,fieldName,position!!,methodName!!,methodDesc!!,callMethodName!!,callMethodDesc!!,isProtected!!))
-                }
             }
 
         }
