@@ -133,14 +133,16 @@ object AsmUtils {
     fun addBindingClassCode(bindingBean:BindingClassBean,viewBindingClass:String,mv: MethodVisitor):Boolean {
         try {
             mv.visitVarInsn(Opcodes.ALOAD, 0)
-            mv.visitLdcInsn(Type.getObjectType(slashToDot(viewBindingClass)))  // 加载类名
+            mv.visitLdcInsn(Type.getType("L" + dotToSlash(viewBindingClass) + ";"));
             mv.visitMethodInsn(
                 Opcodes.INVOKEVIRTUAL,
                 bindingBean.className,
                 bindingBean.callMethodName,
                 bindingBean.callMethodDesc,
                 false)
-            mv.visitVarInsn(Opcodes.ALOAD, 0);  // 再次加载 "this"
+            mv.visitTypeInsn(Opcodes.CHECKCAST, dotToSlash(viewBindingClass))
+
+            mv.visitVarInsn(Opcodes.ALOAD, 0)
             mv.visitInsn(Opcodes.SWAP);  // 交换栈顶，使 this 在前
             mv.visitFieldInsn(
                 Opcodes.PUTFIELD,

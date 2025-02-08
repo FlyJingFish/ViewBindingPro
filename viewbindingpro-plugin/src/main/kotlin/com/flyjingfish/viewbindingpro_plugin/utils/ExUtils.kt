@@ -12,6 +12,8 @@ import java.util.zip.ZipInputStream
 
 const val Joined = "Lcom/flyjingfish/viewbindingpro_core/Joined;"
 const val ViewBindingName = "androidx.viewbinding.ViewBinding"
+const val CancelBindViewBinding = "Lcom/flyjingfish/viewbindingpro_core/CancelBindViewBinding;"
+const val CancelBindClass = "Lcom/flyjingfish/viewbindingpro_core/CancelBindClass;"
 fun registerCompileTempDir(project: Project, variantName:String):String{
     return project.buildDir.absolutePath + "/tmp/viewbindingpro/${variantName}/tempCompileClass/".adapterOSPath()
 }
