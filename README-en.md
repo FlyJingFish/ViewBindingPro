@@ -49,7 +49,7 @@ motivation. Stars and Issues are welcome!**
     ```gradle
     
     plugins {
-        //Required item 👇 apply Set to true to automatically "pre-configure" debugMode for all modules, false, follow the second method of step 5 below
+        //Required item 👇 apply Set to true
         id "io.github.FlyJingFish.ViewBindingPro" version "1.0.2" apply true
     }
     ```
@@ -63,7 +63,7 @@ motivation. Stars and Issues are welcome!**
             classpath 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:1.0.2'
         }
     }
-    // 👇 Add this sentence to automatically "pre-configure" debugMode for all modules, if not, follow the second method of step 5 below
+    // // 👇Add this sentence to automatically set for all modules
     apply plugin: "viewbinding.pro"
     ```
 

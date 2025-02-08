@@ -52,7 +52,7 @@
   ```gradle
   
   plugins {
-      //必须项 👇 apply 设置为 true 自动为所有module“预”配置debugMode，false则按下边步骤五的方式二
+      //必须项 👇 apply 设置为 true 
       id "io.github.FlyJingFish.ViewBindingPro" version "1.0.2" apply true
   }
   ```
@@ -66,7 +66,7 @@
             classpath 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:1.0.2'
         }
     }
-    // 👇加上这句自动为所有module“预”配置debugMode，不加则按下边步骤五的方式二
+    // 👇加上这句自动为所有module设置
     apply plugin: "viewbinding.pro"
     ```
 
