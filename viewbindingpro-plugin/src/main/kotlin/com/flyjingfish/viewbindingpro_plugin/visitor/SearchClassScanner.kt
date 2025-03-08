@@ -44,6 +44,17 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         if (descriptor == CancelBindClass){
             cancelBindClass = true
         }
+
+        val bindingBean = BindingUtils.isExtendBaseClass(superName)
+        if (!cancelBindViewBinding && superName != null && bindingBean != null){
+            parseGenericSignature(signature,bindingBean)
+        }
+
+        val bindingClassBean = BindingUtils.isExtendBaseBindClass(superName)
+        if (!cancelBindClass && superName != null && bindingClassBean != null){
+            parseGenericSignature(signature,bindingClassBean)
+        }
+
         if (cancelBindViewBinding){
             bindingInfo = null
         }
@@ -64,15 +75,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         className = name
         this.superName = superName
         this.signature = signature
-        val bindingBean = BindingUtils.isExtendBaseClass(superName)
-        if (superName != null && bindingBean != null){
-            parseGenericSignature(signature,bindingBean)
-        }
 
-        val bindingClassBean = BindingUtils.isExtendBaseBindClass(superName)
-        if (superName != null && bindingClassBean != null){
-            parseGenericSignature(signature,bindingClassBean)
-        }
         interfaces?.let {
             var isViewBinding = false
             for (s in it) {
@@ -95,7 +98,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
                 private var index = 0
                 override fun visitClassType(name: String?) {
-                    if (index >0 && name != null && BindingUtils.isViewBindingClass(name) && bindingBean.position == index-1){
+                    if (index >0 && name != null && bindingBean.position == index-1){
                         isRegister = true
                         bindingInfo = bindingBean
                         viewBindingClass = name
@@ -106,10 +109,10 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
 
             })
         }
-        if (!isRegister){
-//            BindingUtils.addBindingInfo4Extends(className,BindingBean(className,bindingBean.fieldName,bindingBean.position,bindingBean.methodName,bindingBean.methodDesc,bindingBean.bindingType))
-            BindingUtils.addBindingInfo4Extends(className,bindingBean)
-        }
+//        if (!isRegister){
+//            BindingUtils.addBindingInfo4Extends(className,bindingBean)
+//        }
+        BindingUtils.addBindingInfo4Extends(className,bindingBean)
     }
 
     private fun parseGenericSignature(signature: String?,bindingBean: BindingClassBean) {
@@ -131,9 +134,10 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
 
             })
         }
-        if (!isRegister){
-            BindingUtils.addBindClassInfo4Extends(className,bindingBean)
-        }
+//        if (!isRegister){
+//            BindingUtils.addBindClassInfo4Extends(className,bindingBean)
+//        }
+        BindingUtils.addBindClassInfo4Extends(className,bindingBean)
     }
 
 
