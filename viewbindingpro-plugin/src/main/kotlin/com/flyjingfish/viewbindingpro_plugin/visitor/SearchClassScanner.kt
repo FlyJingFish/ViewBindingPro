@@ -8,7 +8,9 @@ import com.flyjingfish.viewbindingpro_plugin.utils.CancelBindClass
 import com.flyjingfish.viewbindingpro_plugin.utils.CancelBindViewBinding
 import com.flyjingfish.viewbindingpro_plugin.utils.Joined
 import com.flyjingfish.viewbindingpro_plugin.utils.ViewBindingName
+import com.flyjingfish.viewbindingpro_plugin.utils.dotToSlash
 import com.flyjingfish.viewbindingpro_plugin.utils.slashToDot
+import com.flyjingfish.viewbindingpro_plugin.utils.toClassPath
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
@@ -98,7 +100,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
                 private var index = 0
                 override fun visitClassType(name: String?) {
-                    if (index >0 && name != null && bindingBean.position == index-1){
+                    if (index >0 && name != null&& name != dotToSlash(ViewBindingName) && bindingBean.position == index-1){
                         isRegister = true
                         bindingInfo = bindingBean
                         viewBindingClass = name
@@ -123,7 +125,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             signatureReader.accept(object : SignatureVisitor(Opcodes.ASM9) {
                 private var index = 0
                 override fun visitClassType(name: String?) {
-                    if (index >0 && name != null && bindingBean.position == index-1){
+                    if (index >0 && name != null && name != bindingBean.baseClassName && bindingBean.position == index-1){
                         isRegister = true
                         bindingClassInfo = bindingBean
                         bindingClass = name
