@@ -86,30 +86,30 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
                                    kotlinCompile:KotlinCompileTool){
 
 
-        val localInput = mutableListOf<File>()
+        val localInput = mutableListOf<String>()
         val javaPath = kotlinCompile.destinationDirectory.get().asFile
         if (javaPath.exists()){
-            localInput.add(javaPath)
+            localInput.add(javaPath.absolutePath)
         }
 
-        val jarInput = mutableListOf<File>()
+        val jarInput = mutableListOf<String>()
         val bootJarPath = mutableSetOf<String>()
         for (file in localInput) {
-            bootJarPath.add(file.absolutePath)
+            bootJarPath.add(file)
         }
         for (file in kotlinCompile.libraries) {
             if (file.absolutePath !in bootJarPath && file.exists()){
                 if (file.isDirectory){
-                    localInput.add(file)
+                    localInput.add(file.absolutePath)
                 }else{
-                    jarInput.add(file)
+                    jarInput.add(file.absolutePath)
                 }
             }
         }
         if (localInput.isNotEmpty()){
             val output = File(kotlinCompile.destinationDirectory.asFile.orNull.toString())
-            val task = SearchRegisterClassesTask(jarInput,localInput,output,project,isApp,
-                variantName,false
+            val task = SearchRegisterClassesTask(jarInput.map(::File),localInput.map(::File),output,project,
+                variantName
             )
             task.taskAction()
         }
@@ -121,32 +121,32 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
 
 
         val logger = project.logger
-        val localInput = mutableListOf<File>()
+        val localInput = mutableListOf<String>()
         val javaPath = File(javaCompile.destinationDirectory.asFile.orNull.toString())
         if (javaPath.exists()){
-            localInput.add(javaPath)
+            localInput.add(javaPath.absolutePath)
         }
 
         if (kotlinPath.exists()){
-            localInput.add(kotlinPath)
+            localInput.add(kotlinPath.absolutePath)
         }
-        val jarInput = mutableListOf<File>()
+        val jarInput = mutableListOf<String>()
         val bootJarPath = mutableSetOf<String>()
         for (file in localInput) {
-            bootJarPath.add(file.absolutePath)
+            bootJarPath.add(file)
         }
         for (file in javaCompile.classpath) {
             if (file.absolutePath !in bootJarPath && file.exists()){
                 if (file.isDirectory){
-                    localInput.add(file)
+                    localInput.add(file.absolutePath)
                 }else{
-                    jarInput.add(file)
+                    jarInput.add(file.absolutePath)
                 }
             }
         }
         if (localInput.isNotEmpty()){
             val output = File(javaCompile.destinationDirectory.asFile.orNull.toString())
-            val task = SearchRegisterClassesTask(jarInput,localInput,output,project,isApp,
+            val task = SearchRegisterClassesTask(jarInput.map(::File),localInput.map(::File),output,project,
                 variantName
             )
             task.taskAction()

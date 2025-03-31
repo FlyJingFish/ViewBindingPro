@@ -26,13 +26,11 @@ import java.io.FileInputStream
 import kotlin.system.measureTimeMillis
 
 class SearchRegisterClassesTask(
-    private val allJars: MutableList<File>,
-    private val allDirectories: MutableList<File>,
+    private val allJars: List<File>,
+    private val allDirectories: List<File>,
     private val output: File,
     private val project: Project,
-    private val isApp:Boolean,
     private val variantName:String,
-    private val isJava:Boolean = true
 ) {
     companion object{
         const val _CLASS = ".class"
@@ -150,9 +148,10 @@ class SearchRegisterClassesTask(
                                         val outFile = File(tmpCompileDir+File.separatorChar+relativePath)
                                         outFile.checkExist()
                                         cw.toByteArray().saveFile(outFile)
-                                        outFile.inputStream().use {
-                                            file.saveEntry(it)
-                                        }
+                                        outFile.copyTo(file,true)
+//                                        outFile.inputStream().use {
+//                                            file.saveEntry(it)
+//                                        }
                                     }
 
 
@@ -169,10 +168,10 @@ class SearchRegisterClassesTask(
         }
 
         wovenCodeJobs.awaitAll()
-        async(Dispatchers.IO) {
-            val tmpCompileDir = File(registerCompileTempDir(project,variantName))
-            tmpCompileDir.deleteRecursively()
-        }
+//        async(Dispatchers.IO) {
+//            val tmpCompileDir = File(registerCompileTempDir(project,variantName))
+//            tmpCompileDir.deleteRecursively()
+//        }
     }
 
 
