@@ -3,7 +3,9 @@ package com.flyjingfish.viewbindingpro_plugin.tasks
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingClassBean
 import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
+import com.flyjingfish.viewbindingpro_plugin.utils.BindingUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.Joined
+import com.flyjingfish.viewbindingpro_plugin.utils._CLASS
 import com.flyjingfish.viewbindingpro_plugin.utils.checkExist
 import com.flyjingfish.viewbindingpro_plugin.utils.getRelativePath
 import com.flyjingfish.viewbindingpro_plugin.utils.registerCompileTempDir
@@ -28,14 +30,10 @@ import kotlin.system.measureTimeMillis
 class SearchRegisterClassesTask(
     private val allJars: List<File>,
     private val allDirectories: List<File>,
-    private val output: File,
     private val project: Project,
     private val variantName:String,
+    private val isApp:Boolean
 ) {
-    companion object{
-        const val _CLASS = ".class"
-
-    }
 
     fun taskAction() {
         println("ViewBindingPro:search code start")
@@ -50,7 +48,9 @@ class SearchRegisterClassesTask(
         searchJoinPointLocation()
         wovenCode()
 
-
+        if (isApp){
+            BindingUtils.clear()
+        }
     }
 
 
@@ -59,7 +59,7 @@ class SearchRegisterClassesTask(
         //第一遍找配置文件
         allDirectories.forEach { directory ->
             directory.walk().forEach { file ->
-                AsmUtils.processFileForConfig(project,file)
+                AsmUtils.processFileForConfig(file)
             }
 
         }

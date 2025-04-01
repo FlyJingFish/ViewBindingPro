@@ -9,7 +9,7 @@ import java.io.InputStream
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.zip.ZipInputStream
-
+const val _CLASS = ".class"
 const val Joined = "Lcom/flyjingfish/viewbindingpro_core/Joined;"
 const val ViewBindingName = "androidx.viewbinding.ViewBinding"
 const val CancelBindViewBinding = "Lcom/flyjingfish/viewbindingpro_core/CancelBindViewBinding;"
@@ -46,8 +46,14 @@ fun File.saveEntry(inputStream: InputStream) {
 }
 
 fun ByteArray.saveFile(outFile : File){
-    inputStream().use { inputStream->
-        outFile.saveEntry(inputStream)
+    val oldByte = outFile.readBytes()
+    if (!oldByte.contentEquals(this)) {
+        println("saveFile=${outFile.name}-override")
+        inputStream().use { inputStream->
+            outFile.saveEntry(inputStream)
+        }
+    }else{
+        println("saveFile=${outFile.name}")
     }
 }
 

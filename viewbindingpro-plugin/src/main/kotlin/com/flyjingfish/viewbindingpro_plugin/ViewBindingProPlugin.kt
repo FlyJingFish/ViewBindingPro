@@ -15,7 +15,6 @@ class ViewBindingProPlugin : Plugin<Project> {
             return
         }
         if (project.rootProject == project){
-            BindingUtils.clear()
             deepSetDebugMode(project.rootProject)
         }
         SearchCodePlugin(false).apply(project)

@@ -20,8 +20,8 @@ import java.io.File
 /**
  * root 是指通过根目录build.gradle 设置的
  */
-class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
-    companion object{
+class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
+    companion object {
         const val ANDROID_EXTENSION_NAME = "android"
     }
 
@@ -45,8 +45,8 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
             kotlinCompileFilePathMap[task.name] = task
             task.doLast {
                 val variantBean = kotlinCompileVariantMap[it.name]
-                if (variantBean != null){
-                    doKotlinSearchTask(project, isApp, variantBean.variantName, variantBean.buildTypeName, task)
+                if (variantBean != null) {
+                    doKotlinSearchTask(project, variantBean.variantName, task, isApp)
                 }
             }
         }
@@ -64,8 +64,9 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
             val variantName = variant.name
             val buildTypeName = variant.buildType.name
 
-            kotlinCompileVariantMap["compile${variantName.capitalized()}Kotlin"] = VariantBean(variantName,buildTypeName)
-            javaCompile.doLast{
+            kotlinCompileVariantMap["compile${variantName.capitalized()}Kotlin"] =
+                VariantBean(variantName, buildTypeName)
+            javaCompile.doLast {
                 val task = try {
                     kotlinCompileFilePathMap["compile${variantName.capitalized()}Kotlin"]
                 } catch (_: Throwable) {
@@ -76,19 +77,24 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
                 } catch (e: Throwable) {
                     null
                 }
-                val kotlinPath = cacheDir ?: File(project.buildDir.path + "/tmp/kotlin-classes/".adapterOSPath() + variantName)
-                doSearchTask(project, isApp, variantName, buildTypeName, javaCompile,kotlinPath)
+                val kotlinPath = cacheDir
+                    ?: File(project.buildDir.path + "/tmp/kotlin-classes/".adapterOSPath() + variantName)
+                doSearchTask(project, variantName, javaCompile, kotlinPath, isApp)
             }
         }
     }
 
-    private fun doKotlinSearchTask(project: Project, isApp:Boolean, variantName: String, buildTypeName: String,
-                                   kotlinCompile:KotlinCompileTool){
+    private fun doKotlinSearchTask(
+        project: Project,
+        variantName: String,
+        kotlinCompile: KotlinCompileTool,
+        isApp: Boolean
+    ) {
 
 
         val localInput = mutableListOf<String>()
         val javaPath = kotlinCompile.destinationDirectory.get().asFile
-        if (javaPath.exists()){
+        if (javaPath.exists()) {
             localInput.add(javaPath.absolutePath)
         }
 
@@ -98,36 +104,43 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
             bootJarPath.add(file)
         }
         for (file in kotlinCompile.libraries) {
-            if (file.absolutePath !in bootJarPath && file.exists()){
-                if (file.isDirectory){
+            if (file.absolutePath !in bootJarPath && file.exists()) {
+                if (file.isDirectory) {
                     localInput.add(file.absolutePath)
-                }else{
+                } else {
                     jarInput.add(file.absolutePath)
                 }
             }
         }
-        if (localInput.isNotEmpty()){
-            val output = File(kotlinCompile.destinationDirectory.asFile.orNull.toString())
-            val task = SearchRegisterClassesTask(jarInput.map(::File),localInput.map(::File),output,project,
-                variantName
+        if (localInput.isNotEmpty()) {
+            val task = SearchRegisterClassesTask(
+                jarInput.map(::File),
+                localInput.map(::File),
+                project,
+                variantName,
+                isApp
             )
             task.taskAction()
         }
     }
 
 
-    private fun doSearchTask(project: Project, isApp:Boolean, variantName: String, buildTypeName: String,
-                             javaCompile:AbstractCompile, kotlinPath: File){
+    private fun doSearchTask(
+        project: Project,
+        variantName: String,
+        javaCompile: AbstractCompile,
+        kotlinPath: File,
+        isApp: Boolean
+    ) {
 
 
-        val logger = project.logger
         val localInput = mutableListOf<String>()
         val javaPath = File(javaCompile.destinationDirectory.asFile.orNull.toString())
-        if (javaPath.exists()){
+        if (javaPath.exists()) {
             localInput.add(javaPath.absolutePath)
         }
 
-        if (kotlinPath.exists()){
+        if (kotlinPath.exists()) {
             localInput.add(kotlinPath.absolutePath)
         }
         val jarInput = mutableListOf<String>()
@@ -136,18 +149,21 @@ class SearchCodePlugin(private val root:Boolean): Plugin<Project> {
             bootJarPath.add(file)
         }
         for (file in javaCompile.classpath) {
-            if (file.absolutePath !in bootJarPath && file.exists()){
-                if (file.isDirectory){
+            if (file.absolutePath !in bootJarPath && file.exists()) {
+                if (file.isDirectory) {
                     localInput.add(file.absolutePath)
-                }else{
+                } else {
                     jarInput.add(file.absolutePath)
                 }
             }
         }
-        if (localInput.isNotEmpty()){
-            val output = File(javaCompile.destinationDirectory.asFile.orNull.toString())
-            val task = SearchRegisterClassesTask(jarInput.map(::File),localInput.map(::File),output,project,
-                variantName
+        if (localInput.isNotEmpty()) {
+            val task = SearchRegisterClassesTask(
+                jarInput.map(::File),
+                localInput.map(::File),
+                project,
+                variantName,
+                isApp
             )
             task.taskAction()
         }

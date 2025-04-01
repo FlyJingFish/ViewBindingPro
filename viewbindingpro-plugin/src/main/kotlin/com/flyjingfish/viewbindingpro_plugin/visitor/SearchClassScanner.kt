@@ -47,15 +47,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             cancelBindClass = true
         }
 
-        val bindingBean = BindingUtils.isExtendBaseClass(superName)
-        if (!cancelBindViewBinding && superName != null && bindingBean != null){
-            parseGenericSignature(signature,bindingBean)
-        }
-
-        val bindingClassBean = BindingUtils.isExtendBaseBindClass(superName)
-        if (!cancelBindClass && superName != null && bindingClassBean != null){
-            parseGenericSignature(signature,bindingClassBean)
-        }
+        init()
 
         if (cancelBindViewBinding){
             bindingInfo = null
@@ -65,6 +57,19 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         }
         return super.visitAnnotation(descriptor, visible)
     }
+
+    private fun init(){
+        val bindingBean = BindingUtils.isExtendBaseClass(superName)
+        if (!cancelBindViewBinding && superName != null && bindingBean != null && signature != null){
+            parseGenericSignature(signature,bindingBean)
+        }
+
+        val bindingClassBean = BindingUtils.isExtendBaseBindClass(superName)
+        if (!cancelBindClass && superName != null && bindingClassBean != null && signature != null){
+            parseGenericSignature(signature,bindingClassBean)
+        }
+    }
+
     override fun visit(
         version: Int,
         access: Int,
@@ -77,7 +82,7 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
         className = name
         this.superName = superName
         this.signature = signature
-
+        init()
         interfaces?.let {
             var isViewBinding = false
             for (s in it) {
@@ -149,9 +154,11 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     ): MethodVisitor? {
         val bindingBean = bindingInfo
         val bindingClassBean = bindingClassInfo
-        return if ((bindingBean != null && bindingBean.methodName == name && bindingBean.methodDesc == descriptor)||
-            (bindingClassBean != null && bindingClassBean.insertMethodName == name && bindingClassBean.insertMethodDesc == descriptor)){
+        val isViewBinding = bindingBean != null && bindingBean.methodName == name && bindingBean.methodDesc == descriptor
+        val isBindClass = bindingClassBean != null && bindingClassBean.insertMethodName == name && bindingClassBean.insertMethodDesc == descriptor
+        return if (isViewBinding || isBindClass){
             MyMethodVisitor(
+                isViewBinding,isBindClass,
                 super.visitMethod(access, name, descriptor, signature, exceptions)
             )
         }else{
@@ -163,19 +170,22 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
     override fun visitEnd() {
         super.visitEnd()
         val bindingBean = bindingInfo
-        if (!isSetBindingInfo && bindingBean != null && ::viewBindingClass.isInitialized){
+        if (!isSetBindingInfo && bindingBean != null && ::viewBindingClass.isInitialized && !isJoinedBinding){
             onBackNotWovenMethod?.onBack(bindingBean,superName,viewBindingClass)
         }
 
         val bindingClassBean = bindingClassInfo
-        if (!isSetBindingClassInfo && bindingClassBean != null && ::bindingClass.isInitialized){
+        if (!isSetBindingClassInfo && bindingClassBean != null && ::bindingClass.isInitialized && !isJoinedClass){
             onBackNotWovenMethod?.onBack(bindingClassBean,superName,bindingClass)
         }
 
     }
 
-
+    private var isJoinedBinding = false
+    private var isJoinedClass = false
     open inner class MyMethodVisitor(
+        private val isViewBinding:Boolean,
+        private val isBindClass:Boolean,
         methodVisitor: MethodVisitor?
     ) : MethodVisitor(
         Opcodes.ASM9,methodVisitor
@@ -193,6 +203,12 @@ class SearchClassScanner(classVisitor: ClassVisitor? = null,private val onBackNo
             val bindingBean = bindingInfo
             val bindingClassBean = bindingClassInfo
             val join = isJoined
+            if (join && isViewBinding){
+                isJoinedBinding = true
+            }
+            if (join && isBindClass){
+                isJoinedClass = true
+            }
             if (!join && (bindingBean != null || bindingClassBean != null)){
                 val av = mv.visitAnnotation(Joined, false)
                 av?.visitEnd()
