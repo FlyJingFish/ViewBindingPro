@@ -4,6 +4,7 @@ import com.flyjingfish.viewbindingpro_plugin.bean.BindingBean
 import com.flyjingfish.viewbindingpro_plugin.bean.BindingClassBean
 import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.BindingUtils
+import com.flyjingfish.viewbindingpro_plugin.utils.FileHashUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.Joined
 import com.flyjingfish.viewbindingpro_plugin.utils._CLASS
 import com.flyjingfish.viewbindingpro_plugin.utils.checkExist
@@ -50,6 +51,7 @@ class SearchRegisterClassesTask(
 
         if (isApp){
             BindingUtils.clear()
+            FileHashUtils.clearScanRecord()
         }
     }
 
@@ -59,7 +61,7 @@ class SearchRegisterClassesTask(
         //第一遍找配置文件
         allDirectories.forEach { directory ->
             directory.walk().forEach { file ->
-                AsmUtils.processFileForConfig(file)
+                AsmUtils.processFileForConfig(directory,file)
             }
 
         }

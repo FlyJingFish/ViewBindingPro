@@ -14,9 +14,13 @@ import java.io.FileInputStream
 import java.util.jar.JarFile
 
 object AsmUtils {
-    fun processFileForConfig(file: File) {
+    fun processFileForConfig(directory: File,file: File) {
         if (file.isFile) {
+            val className = file.getFileClassname(directory)
             if (file.absolutePath.endsWith(_CLASS)) {
+                if (!FileHashUtils.isScanFile(className)){
+                    return
+                }
                 FileInputStream(file).use { inputs ->
                     val bytes = inputs.readAllBytes()
                     if (bytes.isNotEmpty()) {
@@ -40,6 +44,9 @@ object AsmUtils {
             try {
                 val entryName = jarEntry.name
                 if (jarEntry.isDirectory || jarEntry.name.isEmpty()) {
+                    continue
+                }
+                if (!FileHashUtils.isScanFile(entryName)){
                     continue
                 }
                 if (entryName.endsWith(_CLASS)) {
