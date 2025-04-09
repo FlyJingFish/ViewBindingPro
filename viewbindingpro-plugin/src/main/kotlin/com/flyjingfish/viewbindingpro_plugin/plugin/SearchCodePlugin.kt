@@ -11,6 +11,7 @@ import com.flyjingfish.viewbindingpro_plugin.utils.adapterOSPath
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -33,7 +34,7 @@ class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
         val androidObject: Any = project.extensions.findByName(ANDROID_EXTENSION_NAME) ?: return
 
 
-        val kotlinCompileFilePathMap = mutableMapOf<String, KotlinCompileTool>()
+        val kotlinCompileFilePathMap = mutableMapOf<String, Task>()
         val kotlinCompileVariantMap = mutableMapOf<String, VariantBean>()
         val android = androidObject as BaseExtension
         val variants = if (isApp or isDynamicLibrary) {
@@ -41,14 +42,17 @@ class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
         } else {
             (android as LibraryExtension).libraryVariants
         }
-        project.tasks.withType(KotlinCompile::class.java).configureEach { task ->
-            kotlinCompileFilePathMap[task.name] = task
-            task.doLast {
-                val variantBean = kotlinCompileVariantMap[it.name]
-                if (variantBean != null) {
-                    doKotlinSearchTask(project, variantBean.variantName, task, isApp)
+        try {
+            project.tasks.withType(KotlinCompile::class.java).configureEach { task ->
+                kotlinCompileFilePathMap[task.name] = task
+                task.doLast {
+                    val variantBean = kotlinCompileVariantMap[it.name]
+                    if (variantBean != null) {
+                        doKotlinSearchTask(project, variantBean.variantName, task, isApp)
+                    }
                 }
             }
+        } catch (_: Throwable) {
         }
         variants.all { variant ->
 
@@ -73,7 +77,9 @@ class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
                     null
                 }
                 val cacheDir = try {
-                    task?.destinationDirectory?.get()?.asFile
+                    task?.let {
+                        (it as KotlinCompileTool).destinationDirectory.get().asFile
+                    }
                 } catch (e: Throwable) {
                     null
                 }
