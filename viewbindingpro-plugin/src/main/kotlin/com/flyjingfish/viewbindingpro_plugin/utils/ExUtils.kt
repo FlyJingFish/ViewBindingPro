@@ -48,12 +48,9 @@ fun File.saveEntry(inputStream: InputStream) {
 fun ByteArray.saveFile(outFile : File){
     val oldByte = outFile.readBytes()
     if (!oldByte.contentEquals(this)) {
-        println("saveFile=${outFile.name}-override")
         inputStream().use { inputStream->
             outFile.saveEntry(inputStream)
         }
-    }else{
-        println("saveFile=${outFile.name}")
     }
 }
 
