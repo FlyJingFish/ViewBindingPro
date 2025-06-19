@@ -3,8 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 javadoc {
-    title = "AndroidAop Annotation ${version} API"
-    options.bottom = 'AndroidAop'
+    title = "ViewBindingPro Core ${version} API"
+    options.bottom = 'ViewBindingPro'
 }
 apply from: "$rootDir/gradle/java_base.gradle"
 apply from: "$rootDir/gradle/java_publish.gradle"

@@ -28,7 +28,7 @@ gradlePlugin {
     plugins {
         androidAop {
             // 插件id
-            id = 'io.github.FlyJingFish.ViewBindingPro'
+            id = 'io.github.flyjingfish.viewbindingpro'
             // 插件全路径
             implementationClass = "com.flyjingfish.viewbindingpro_plugin.ViewBindingProPlugin"
             // 插件名称

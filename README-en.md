@@ -9,8 +9,8 @@
 </p> 
 
 <p align="center">
-  <a href="https://central.sonatype.com/search?q=io.github.FlyJingFish.ViewBindingPro"><img
-    src="https://img.shields.io/maven-central/v/io.github.FlyJingFish.ViewBindingPro/viewbindingpro-core"
+   <a href="https://central.sonatype.com/artifact/io.github.flyjingfish/viewbindingpro-core"><img
+    src="https://img.shields.io/maven-central/v/io.github.flyjingfish/viewbindingpro-core"
     alt="Build"
   /></a>
   <a href="https://github.com/FlyJingFish/ViewBindingPro/stargazers"><img
@@ -50,7 +50,7 @@ motivation. Stars and Issues are welcome!**
     
     plugins {
         //Required item 👇 apply Set to true
-        id "io.github.FlyJingFish.ViewBindingPro" version "1.0.4" apply true
+        id "io.github.flyjingfish.viewbindingpro" version "1.0.4" apply true
     }
     ```
 
@@ -60,7 +60,7 @@ motivation. Stars and Issues are welcome!**
     buildscript {
         dependencies {
             //Required item 👇
-            classpath 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:1.0.4'
+            classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.4'
         }
     }
     // // 👇Add this sentence to automatically set for all modules
@@ -73,7 +73,7 @@ motivation. Stars and Issues are welcome!**
 
 dependencies {
     //Required 👇
-    implementation 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:1.0.4'
+    implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.4'
 }
 ```
 

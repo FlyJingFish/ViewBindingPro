@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://central.sonatype.com/search?q=io.github.FlyJingFish.ViewBindingPro"><img
-    src="https://img.shields.io/maven-central/v/io.github.FlyJingFish.ViewBindingPro/viewbindingpro-core"
+  <a href="https://central.sonatype.com/artifact/io.github.flyjingfish/viewbindingpro-core"><img
+    src="https://img.shields.io/maven-central/v/io.github.flyjingfish/viewbindingpro-core"
     alt="Build"
   /></a>
   <a href="https://github.com/FlyJingFish/ViewBindingPro/stargazers"><img
@@ -53,7 +53,7 @@
   
   plugins {
       //必须项 👇 apply 设置为 true 
-      id "io.github.FlyJingFish.ViewBindingPro" version "1.0.4" apply true
+      id "io.github.flyjingfish.viewbindingpro" version "1.0.4" apply true
   }
   ```
 
@@ -63,7 +63,7 @@
     buildscript {
         dependencies {
             //必须项 👇
-            classpath 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-plugin:1.0.4'
+            classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.4'
         }
     }
     // 👇加上这句自动为所有module设置
@@ -76,7 +76,7 @@
 ```gradle
 dependencies {
     //必须项 👇
-    implementation 'io.github.FlyJingFish.ViewBindingPro:viewbindingpro-core:1.0.4'
+    implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.4'
 }
 ```
 
