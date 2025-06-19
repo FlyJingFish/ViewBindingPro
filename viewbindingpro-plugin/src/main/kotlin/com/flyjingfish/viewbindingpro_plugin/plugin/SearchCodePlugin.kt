@@ -12,6 +12,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.execution.TaskExecutionGraph
+import org.gradle.api.execution.TaskExecutionGraphListener
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -21,14 +23,36 @@ import java.io.File
 /**
  * root 是指通过根目录build.gradle 设置的
  */
-class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
+class SearchCodePlugin(private val fromRootSet: Boolean) : Plugin<Project> {
     companion object {
         const val ANDROID_EXTENSION_NAME = "android"
+        private val kotlinCompileFilePathMap = mutableMapOf<String, File>()
     }
 
     override fun apply(project: Project) {
         val isApp = project.plugins.hasPlugin(AppPlugin::class.java)
+        if (!fromRootSet && project.rootProject == project){
+            project.rootProject.gradle.taskGraph.addTaskExecutionGraphListener(object :
+                TaskExecutionGraphListener {
+                override fun graphPopulated(it: TaskExecutionGraph) {
+                    try {
+                        for (task in it.allTasks) {
+                            if (task is KotlinCompileTool){
+                                val destinationDirectory = task.destinationDirectory.get().asFile
+                                val key = task.project.buildDir.absolutePath+"@"+task.name
+                                val oldDirectory = kotlinCompileFilePathMap[key]
+                                if (oldDirectory == null || oldDirectory.absolutePath != destinationDirectory.absolutePath){
+                                    kotlinCompileFilePathMap[key] = destinationDirectory
+                                }
+                            }
+                        }
+                    } catch (_: Throwable) {
+                    }
+                    project.rootProject.gradle.taskGraph.removeTaskExecutionGraphListener(this)
+                }
 
+            })
+        }
 
         val isDynamicLibrary = project.plugins.hasPlugin(DynamicFeaturePlugin::class.java)
         val androidObject: Any = project.extensions.findByName(ANDROID_EXTENSION_NAME) ?: return
@@ -68,24 +92,9 @@ class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
             val variantName = variant.name
             val buildTypeName = variant.buildType.name
 
-            kotlinCompileVariantMap["compile${variantName.capitalized()}Kotlin"] =
-                VariantBean(variantName, buildTypeName)
+            val kotlinBuildPath = File(project.buildDir.path + "/tmp/kotlin-classes/".adapterOSPath() + variantName)
             javaCompile.doLast {
-                val task = try {
-                    kotlinCompileFilePathMap["compile${variantName.capitalized()}Kotlin"]
-                } catch (_: Throwable) {
-                    null
-                }
-                val cacheDir = try {
-                    task?.let {
-                        (it as KotlinCompileTool).destinationDirectory.get().asFile
-                    }
-                } catch (e: Throwable) {
-                    null
-                }
-                val kotlinPath = cacheDir
-                    ?: File(project.buildDir.path + "/tmp/kotlin-classes/".adapterOSPath() + variantName)
-                doSearchTask(project, variantName, javaCompile, kotlinPath, isApp)
+                doSearchTask(project, variantName, javaCompile, kotlinBuildPath, isApp)
             }
         }
     }
@@ -135,11 +144,12 @@ class SearchCodePlugin(private val root: Boolean) : Plugin<Project> {
         project: Project,
         variantName: String,
         javaCompile: AbstractCompile,
-        kotlinPath: File,
+        kotlinDefaultPath: File,
         isApp: Boolean
     ) {
-
-
+        val cacheDir = kotlinCompileFilePathMap[project.buildDir.absolutePath+"@"+"compile${variantName.capitalized()}Kotlin"]
+        val kotlinPath = cacheDir
+            ?:kotlinDefaultPath
         val localInput = mutableListOf<String>()
         val javaPath = File(javaCompile.destinationDirectory.asFile.orNull.toString())
         if (javaPath.exists()) {

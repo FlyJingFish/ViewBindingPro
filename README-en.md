@@ -1,15 +1,17 @@
+
 <h4 align="right">
-  <strong>English</strong> | <a href="https://github.com/FlyJingFish/ViewBindingPro/blob/master/README.md">简体中文</a>
+  <strong>简体中文</strong> | <a href="https://github.com/FlyJingFish/ViewBindingPro/blob/master/README.md">English</a>
 </h4>
 
-<p align="center"> 
-    <strong> 🔥🔥🔥Enhance the usage scenarios of ViewBinding 
-        <a>ViewBindingPro</a> 
-    </strong> 
-</p> 
+<p align="center">
+  <strong>
+    🔥🔥🔥增强ViewBinding的使用场景
+    <a>ViewBindingPro</a>
+  </strong>
+</p>
 
 <p align="center">
-   <a href="https://central.sonatype.com/artifact/io.github.flyjingfish/viewbindingpro-core"><img
+  <a href="https://central.sonatype.com/artifact/io.github.flyjingfish/viewbindingpro-core"><img
     src="https://img.shields.io/maven-central/v/io.github.flyjingfish/viewbindingpro-core"
     alt="Build"
   /></a>
@@ -31,89 +33,84 @@
   /></a>
 </p>
 
-# Brief description
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;After using this framework, you can automatically
-inject loading code into subclasses by configuring an annotation in the base class such as
-BaseActivity or BaseFragment, without using reflection
 
-## Usage steps
+# 简述
 
-**Can you give the project a Star before starting? Thank you very much, your support is my only
-motivation. Stars and Issues are welcome!**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用这个框架之后，您在 BaseActivity 或 BaseFragment 等基类配置一个注解就可以为 子类自动注入加载代码，无需使用反射
 
-### 1. Introduce plugins (required)
 
-- New version 
 
-    ```gradle
-    
-    plugins {
-        //Required item 👇 apply Set to true
-        id "io.github.flyjingfish.viewbindingpro" version "1.0.4" apply true
-    }
-    ```
+## 使用步骤
 
-- Or old version
+**在开始之前可以给项目一个Star吗？非常感谢，你的支持是我唯一的动力。欢迎Star和Issues!**
 
-    ```gradle
+### 一、项目根目录 `build.gradle` 引入插件（必须）
+
+
+- 新版本
+
+  ```gradle
+  
+  plugins {
+      //必须项 👇 apply 设置为 true 
+      id "io.github.flyjingfish.viewbindingpro" version "1.0.4" apply true
+  }
+  ```
+
+- 或者老版本
+
+  ```gradle
     buildscript {
         dependencies {
-            //Required item 👇
+            //必须项 👇
             classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.4'
         }
     }
-    // // 👇Add this sentence to automatically set for all modules
+    // 👇加上这句自动为所有module设置
     apply plugin: "viewbinding.pro"
     ```
 
-### 2. Introduce dependent libraries (required)
+
+### 二、引入依赖库(必须)
 
 ```gradle
-
 dependencies {
-    //Required 👇
+    //必须项 👇
     implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.4'
 }
 ```
 
 > [!TIP]
-> If you want the packaged code to not include the `viewbindingpro-core` library, you can change it to `compileOnly` to import it
+> 如果你希望打包后的代码中不包含 `viewbindingpro-core` 库，可以改为 `compileOnly` 方式引入
 
-### 3. Usage
+
+### 三、使用方法
 
 #### ViewBinding
 
 - BaseActivity
 
 ```kotlin
-abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
-    @BindViewBinding(
-        position = 0,
-        methodName = "void onCreate(android.os.Bundle)",
-        isProtected = true,
-        bindingType = BingType.INFLATE
-    )
-    protected lateinit var binding: VB
+abstract class BaseActivity<VB :ViewBinding>:AppCompatActivity() {
+    @BindViewBinding(position = 0, methodName = "void onCreate(android.os.Bundle)", isProtected = true, bindingType = BingType.INFLATE)
+    protected lateinit var binding :VB
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState) setContentView (binding.root)
+        super.onCreate(savedInstanceState)
+        setContentView(binding.root)
     }
-} 
-``` 
+
+}
+```
 
 - BaseFragment
 
-```kotlin 
-abstract class BaseFragment<VB : ViewBinding> : Fragment() {
-    @BindViewBinding(
-        position = 0,
-        methodName = "android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)",
-        isProtected = false,
-        bindingType = BingType.INFLATE_FALSE
-    )
-    protected lateinit var binding: VB
-    
+```kotlin
+abstract class BaseFragment<VB : ViewBinding>: Fragment() {
+    @BindViewBinding(position = 0, methodName = "android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)",  isProtected = false,bindingType = BingType.INFLATE_FALSE)
+    protected lateinit var binding :VB
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -122,46 +119,40 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
         return binding.root
     }
 }
-
 ```
 
-#### Binding class 
-- BaseActivity
-```kotlin 
-abstract class BaseVMActivity<VB : ViewBinding, VM : ViewModel> : BaseActivity<VB>() {
-  @BindClass(
-    position = 1,
-    insertMethodName = "void onCreate(android.os.Bundle)",
-    callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",
-    isProtected = true
-  )
-  protected lateinit var mViewModel: VM 
-  
-  fun initViewModel(clazz: Class<out ViewModel>): ViewModel {
-    return ViewModelProvider(this)[clazz]
-  }
-} 
-``` 
-- BaseFragment 
-```kotlin
-abstract class BaseVMFragment<VB : ViewBinding, VM : ViewModel> : BaseFragment<VB>() {
-  @BindClass(
-    position = 1,
-    insertMethodName = "android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)",
-    callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",
-    isProtected = false
-  )
-  protected lateinit var mViewModel: VM
+#### 绑定class
 
-  fun initViewModel(clazz: Class<out ViewModel>): ViewModel {
+- BaseActivity
+
+```kotlin
+abstract class BaseVMActivity<VB :ViewBinding,VM: ViewModel>:BaseActivity<VB>() {
+    @BindClass(position = 1, insertMethodName = "void onCreate(android.os.Bundle)", callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",isProtected = false)
+    protected lateinit var mViewModel : VM
+
+
+    fun initViewModel(clazz: Class<out ViewModel>):ViewModel {
+        return ViewModelProvider(this)[clazz]
+    }
+}
+```
+
+- BaseFragment
+
+```kotlin
+abstract class BaseVMFragment<VB :ViewBinding,VM: ViewModel>:BaseFragment<VB>() {
+  @BindClass(position = 1, insertMethodName = "android.view.View onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)", callMethodName = "androidx.lifecycle.ViewModel initViewModel(java.lang.Class)",isProtected = false)
+  protected lateinit var mViewModel : VM
+
+  fun initViewModel(clazz: Class<out ViewModel>):ViewModel {
     return ViewModelProvider(this)[clazz]
   }
 }
 ```
 
-Both examples above will call `initViewModel` in the corresponding methods of the implementation class
+上述两个例子都会在实现类的相应方法中，调用 `initViewModel`
 
-#### Cancel injection code
+#### 取消注入代码
 
 ```kotlin
 @CancelBindViewBinding
@@ -170,41 +161,40 @@ class MainActivity:BaseVMActivity<ActivityMainBinding,ExampleViewModel>() {
 }
 ```
 
-- CancelBindViewBinding cancels ViewBinding injection
-- CancelBindClass cancels class injection
+- CancelBindViewBinding 是取消注入 ViewBinding
+- CancelBindClass 是取消注入 class
 
-### 4.Switch(optional)
+### 四、开关（非必须）
 
-Add the following settings to the root directory's `gradle.properties`
+在根目录的 `gradle.properties` 中增加如下设置
 
 ```properties
-#Set to false to turn off the automatic injection function
-viewbindingpro.enable = true
+#设置为false即可关闭自动注入功能
+viewbindingpro.enable = true 
 ```
 
-### Extra
+### 番外
 
-If your module is all kotlin code, the plugin may not work. There are currently two ways to deal with it
+如果你的module全部为 kotlin 代码，有可能插件不生效，目前的处理方法有两个
 
-- 1. Add the following settings to the root directory's `gradle.properties`
+- 1、在根目录的 `gradle.properties` 中增加如下设置
 
 ```properties
 android.defaults.buildfeatures.buildconfig=true
 ```
 
-- 2. Manually add a java code to the module that does not work
+- 2、手动为不起作用的 module 增加一个 java 代码
 
-### Finally, I recommend some other libraries I wrote
+### 最后推荐我写的另外一些库
 
-- [OpenImage easily realizes the animated zoom effect of clicking on the small image in the application to view the large image](https://github.com/FlyJingFish/OpenImage)
+- [OpenImage 轻松实现在应用内点击小图查看大图的动画放大效果](https://github.com/FlyJingFish/OpenImage)
 
-- [ShapeImageView supports the display of any graphics, it can do anything you can't think of](https://github.com/FlyJingFish/ShapeImageView)
+- [ShapeImageView 支持显示任意图形，只有你想不到没有它做不到](https://github.com/FlyJingFish/ShapeImageView)
 
-- [GraphicsDrawable supports the display of any graphics, but it is lighter](https://github.com/FlyJingFish/GraphicsDrawable)
+- [GraphicsDrawable 支持显示任意图形，但更轻量](https://github.com/FlyJingFish/GraphicsDrawable)
 
-- [ModuleCommunication solves the communication needs between modules, and has a more convenient router function](https://github.com/FlyJingFish/ModuleCommunication)
+- [ModuleCommunication 解决模块间的通信需求，更有方便的router功能](https://github.com/FlyJingFish/ModuleCommunication)
 
-- [FormatTextViewLib Supports bold, italic, size, underline, and strikethrough for some texts. Underline supports custom distance, color, and line width; supports adding network or local images](https://github.com/FlyJingFish/FormatTextViewLib)
+- [FormatTextViewLib 支持部分文本设置加粗、斜体、大小、下划线、删除线，下划线支持自定义距离、颜色、线的宽度；支持添加网络或本地图片](https://github.com/FlyJingFish/FormatTextViewLib)
 
-- [Homepage View more open source libraries](https://github.com/FlyJingFish)
-
+- [主页查看更多开源库](https://github.com/FlyJingFish)
