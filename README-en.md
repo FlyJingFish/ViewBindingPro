@@ -54,7 +54,7 @@
   
   plugins {
       //必须项 👇 apply 设置为 true 
-      id "io.github.flyjingfish.viewbindingpro" version "1.0.4" apply true
+      id "io.github.flyjingfish.viewbindingpro" version "1.0.5" apply true
   }
   ```
 
@@ -64,7 +64,7 @@
     buildscript {
         dependencies {
             //必须项 👇
-            classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.4'
+            classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.5'
         }
     }
     // 👇加上这句自动为所有module设置
@@ -77,7 +77,7 @@
 ```gradle
 dependencies {
     //必须项 👇
-    implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.4'
+    implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.5'
 }
 ```
 

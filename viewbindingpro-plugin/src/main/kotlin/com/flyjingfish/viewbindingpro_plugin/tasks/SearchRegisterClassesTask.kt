@@ -6,11 +6,11 @@ import com.flyjingfish.viewbindingpro_plugin.utils.AsmUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.BindingUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.FileHashUtils
 import com.flyjingfish.viewbindingpro_plugin.utils.Joined
+import com.flyjingfish.viewbindingpro_plugin.utils.RuntimeProject
 import com.flyjingfish.viewbindingpro_plugin.utils._CLASS
 import com.flyjingfish.viewbindingpro_plugin.utils.checkExist
 import com.flyjingfish.viewbindingpro_plugin.utils.getRelativePath
 import com.flyjingfish.viewbindingpro_plugin.utils.registerCompileTempDir
-import com.flyjingfish.viewbindingpro_plugin.utils.saveEntry
 import com.flyjingfish.viewbindingpro_plugin.utils.saveFile
 import com.flyjingfish.viewbindingpro_plugin.visitor.SearchClassScanner
 import kotlinx.coroutines.Deferred
@@ -18,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import org.gradle.api.Project
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
@@ -31,7 +30,7 @@ import kotlin.system.measureTimeMillis
 class SearchRegisterClassesTask(
     private val allJars: List<File>,
     private val allDirectories: List<File>,
-    private val project: Project,
+    private val project: RuntimeProject,
     private val variantName:String,
     private val isApp:Boolean
 ) {

@@ -26,7 +26,7 @@ gradlePlugin {
     website = PROJ_WEBSITEURL
     vcsUrl = PROJ_VCSURL
     plugins {
-        androidAop {
+        ViewbindingPro {
             // 插件id
             id = 'io.github.flyjingfish.viewbindingpro'
             // 插件全路径
@@ -37,15 +37,6 @@ gradlePlugin {
             description = PROJ_DESCRIPTION
             //标签
             tags.addAll('ViewBindingPro', 'FlyJingFish')
-        }
-    }
-}
-
-publishing {
-    publications {
-        pluginMaven(MavenPublication) {
-            // 和maven仓库artifactId保持一致
-            artifactId = PROJ_NAME
         }
     }
 }

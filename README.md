@@ -50,7 +50,7 @@ motivation. Stars and Issues are welcome!**
     
     plugins {
         //Required item 👇 apply Set to true
-        id "io.github.flyjingfish.viewbindingpro" version "1.0.4" apply true
+        id "io.github.flyjingfish.viewbindingpro" version "1.0.5" apply true
     }
     ```
 
@@ -60,7 +60,7 @@ motivation. Stars and Issues are welcome!**
     buildscript {
         dependencies {
             //Required item 👇
-            classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.4'
+            classpath 'io.github.flyjingfish:viewbindingpro-plugin:1.0.5'
         }
     }
     // // 👇Add this sentence to automatically set for all modules
@@ -73,7 +73,7 @@ motivation. Stars and Issues are welcome!**
 
 dependencies {
     //Required 👇
-    implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.4'
+    implementation 'io.github.flyjingfish:viewbindingpro-core:1.0.5'
 }
 ```
 

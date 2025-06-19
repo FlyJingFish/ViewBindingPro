@@ -7,6 +7,7 @@ import com.android.build.gradle.DynamicFeaturePlugin
 import com.android.build.gradle.LibraryExtension
 import com.flyjingfish.viewbindingpro_plugin.bean.VariantBean
 import com.flyjingfish.viewbindingpro_plugin.tasks.SearchRegisterClassesTask
+import com.flyjingfish.viewbindingpro_plugin.utils.RuntimeProject
 import com.flyjingfish.viewbindingpro_plugin.utils.adapterOSPath
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.gradle.api.Plugin
@@ -30,6 +31,7 @@ class SearchCodePlugin(private val fromRootSet: Boolean) : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
+        val runtimeProject = RuntimeProject.get(project)
         val isApp = project.plugins.hasPlugin(AppPlugin::class.java)
         if (!fromRootSet && project.rootProject == project){
             project.rootProject.gradle.taskGraph.addTaskExecutionGraphListener(object :
@@ -72,7 +74,7 @@ class SearchCodePlugin(private val fromRootSet: Boolean) : Plugin<Project> {
                 task.doLast {
                     val variantBean = kotlinCompileVariantMap[it.name]
                     if (variantBean != null) {
-                        doKotlinSearchTask(project, variantBean.variantName, task, isApp)
+                        doKotlinSearchTask(runtimeProject, variantBean.variantName, task, isApp)
                     }
                 }
             }
@@ -91,16 +93,17 @@ class SearchCodePlugin(private val fromRootSet: Boolean) : Plugin<Project> {
                 }
             val variantName = variant.name
             val buildTypeName = variant.buildType.name
-
+            kotlinCompileVariantMap["compile${variantName.capitalized()}Kotlin"] =
+                VariantBean(variantName, buildTypeName)
             val kotlinBuildPath = File(project.buildDir.path + "/tmp/kotlin-classes/".adapterOSPath() + variantName)
             javaCompile.doLast {
-                doSearchTask(project, variantName, javaCompile, kotlinBuildPath, isApp)
+                doSearchTask(runtimeProject, variantName, javaCompile, kotlinBuildPath, isApp)
             }
         }
     }
 
     private fun doKotlinSearchTask(
-        project: Project,
+        project: RuntimeProject,
         variantName: String,
         kotlinCompile: KotlinCompileTool,
         isApp: Boolean
@@ -141,7 +144,7 @@ class SearchCodePlugin(private val fromRootSet: Boolean) : Plugin<Project> {
 
 
     private fun doSearchTask(
-        project: Project,
+        project: RuntimeProject,
         variantName: String,
         javaCompile: AbstractCompile,
         kotlinDefaultPath: File,
